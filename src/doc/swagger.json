@@ -1,0 +1,9 @@
+{
+    "paths": {
+        "/ping": {
+            "get": {
+                "x-middlewares": ["ping"]
+            }
+        }
+    }
+}
