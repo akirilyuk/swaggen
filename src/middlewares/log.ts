@@ -7,7 +7,7 @@ import { DefaultContainer } from 'src';
 export default (container: DefaultContainer) => (req: Request) => {
   const {
     logger,
-    throwError,
+    createError: throwError,
     STATUS: { BAD_REQUEST },
   } = container;
   req.executionTime = Date.now();

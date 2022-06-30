@@ -1,5 +1,5 @@
 import { DefaultContainer } from 'src';
-import { MiddlewareFactory } from 'src/middlewares/middleware';
+import { MiddlewareFactory } from 'src/interfaces/middleware';
 
 export interface PongResult {
   message: 'pong';

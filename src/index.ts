@@ -1,5 +1,11 @@
 //@ts-nocheck
-import { createContainer, asFunction, asClass, asValue } from 'awilix';
+import {
+  createContainer,
+  asFunction,
+  asClass,
+  asValue,
+  Resolver,
+} from 'awilix';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
@@ -21,22 +27,54 @@ import pino, { Logger } from 'pino';
 import executor from './lib/executor';
 import throwError, { ApiError, createError } from './lib/ApiError';
 import { v4 } from 'uuid';
-import { MiddlewareFactory } from './middlewares/middleware';
+import {
+  MiddlewareFactory,
+  MiddlewareFunction,
+  MiddlewareResult,
+} from './interfaces/middleware';
 
-const logger = pino();
+const logger = pino({
+  level:
+    process.env.NODE_ENV?.toLowerCase() === 'production' ? 'info' : 'debug',
+});
 
 export interface DefaultContainer {
   STATUS: typeof status;
   logger: Logger;
   errorHandler: Function;
-  uuidV4: v4;
-  throwError: createError;
+  uuidV4: typeof v4;
+  createError: createError;
   swagger: any;
   extractor: any;
   executor: any;
   app: any;
-  [key: string]: MiddlewareFactory;
   coreErrors: any;
+  [key: string]: any;
+  coreAppConfig: any;
+}
+
+export interface SwaggenService {
+  [key: string]: any;
+}
+
+export interface SwaggenConfig {
+  [key: string]: any;
+}
+
+export interface HealthConfig {}
+
+export interface SwaggenOptions {
+  swagger: any;
+  customMiddlewares: {
+    [key: string]: MiddlewareFactory;
+  };
+  customServices: {
+    [key: string]: Resolver;
+  };
+}
+
+export interface Swaggen<T> {
+  (req): MiddlewareResult<T>;
 }
 
 export const swaggen = ({
@@ -63,7 +101,7 @@ export const swaggen = ({
     restGenerator: asFunction(restGenerator),
     app: asValue(express),
     compose: asValue(compose),
-    throwError: asFunction(throwError),
+    createError: asFunction(throwError),
     swagger: asValue({
       paths: { ...swagger.paths, ...defaultSwagger.paths },
     }),
@@ -71,7 +109,7 @@ export const swaggen = ({
     logger: asValue(logger),
     executor: asFunction(executor),
     uuidV4: asValue(v4),
-    ApiError: asFunction(ApiError),
+    ApiError: asValue(ApiError),
     ...customServices,
   };
 
@@ -112,21 +150,23 @@ export const swaggen = ({
     });
   };
 
-  const app = container
-    .resolve('app')()
+  const app = (container.resolve('app') as Express)()
     .use('*', cors())
     .use('/doc', swaggerUi.serve, swaggerUi.setup(swagger))
     .use(
       '/api',
       (req, res, next) => {
+        console.log('here 2');
         if (req.method !== 'GET' && req.method !== 'OPTIONS') {
           if (req.headers['content-type'] === 'application/xml') {
             return mergedConfig.parseXmlAsJSON
               ? xmlToJsonParser(req, res, next)
               : xmlBodyParserInited(req, res, next);
           }
+          console.log('here 1');
           return jsonBodyParser(req, res, next);
         }
+        console.log('here 3');
         return next();
       },
       container.resolve('restGenerator'),
@@ -138,10 +178,16 @@ export const swaggen = ({
       message: 'pong',
     });
   });
+  app.use((err, req, res, next) => {
+    console.log(err.message);
+    next(err);
+  });
   const swaggenApp = app.listen(mergedConfig.port);
   swaggenApp.awilixContainer = container;
   swaggenApp.expressApp = app;
   return swaggenApp;
 };
+
+export { MiddlewareFactory, MiddlewareFunction, MiddlewareResult };
 
 export { asFunction, asValue, asClass };

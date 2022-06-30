@@ -35,7 +35,7 @@ export default <C>(container: C & DefaultContainer) =>
           req.locals = { ...req.locals, ...data };
         }
       } catch (err) {
-        error = container.throwError({
+        error = container.createError({
           message: 'failed to execute middleware function',
           originalError: err,
           errorCode: container.coreErrors.middleware.executionError,
@@ -48,14 +48,20 @@ export default <C>(container: C & DefaultContainer) =>
     }
 
     if (!finalCode) {
-      finalCode = container.STATUS.INTERNAL_SERVER_ERROR;
-      // todo log error here
+      error = container.createError({
+        message: 'app did not provide status code',
+        originalError: {},
+        errorCode: container.coreErrors.middleware.noStatusCode,
+        statusCode: container.STATUS.INTERNAL_SERVER_ERROR,
+      });
     }
     if (error) {
       finalResult = error.toJSON();
       finalCode = error.code;
     }
     setHeaders(req, res);
+
     res.status(finalCode).send(finalResult);
+
     return next();
   };

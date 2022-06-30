@@ -5,22 +5,40 @@ const nock = require('nock');
 
 const request = require('supertest');
 import coreErrors from '../../src/constants/errors';
-import { swaggen, asFunction, DefaultContainer } from '../../src';
+import {
+  swaggen,
+  asFunction,
+  DefaultContainer,
+  MiddlewareFactory,
+  MiddlewareFunction,
+} from '../../src';
+import { StatusCodes as HTTP_STATUS } from 'http-status-codes';
 
 describe('test handling middleware functions', () => {
   let customMiddleware;
   let customMiddleware2;
   let app;
   const middleware2 = jest.fn();
-  customMiddleware2 =
-    ({ status: { OK } }) =>
-    req => {
-      req.state = OK;
-      middleware2();
-      return {
-        message: 'pong',
-      };
-    };
+
+  interface ExternalDependency {
+    doStuff: () => string;
+  }
+  interface DoThingsService {
+    doThings: () => any;
+  }
+
+  interface TestContainer extends DefaultContainer {
+    doThingsService: DoThingsService;
+    externalDependency: ExternalDependency;
+  }
+
+  const doThingsServiceFactory = ({
+    externalDependency,
+  }: TestContainer): DoThingsService => ({
+    doThings: () => {
+      return externalDependency.doStuff() + 'I have added another output here';
+    },
+  });
 
   const coreConfig = {
     swagger: {
@@ -45,6 +63,7 @@ describe('test handling middleware functions', () => {
         environment: 'TEST',
       },
     },
+    customMiddlewares: {},
   };
 
   beforeEach(() => {
@@ -62,35 +81,44 @@ describe('test handling middleware functions', () => {
       }
     });
   });
-  it('Should return with forward data to next middleware and return 200', async () => {
-    const data = {
-      some: 'facts',
-    };
-    const data2 = {
-      some2: 'facts2',
-    };
+  it('should return a 200 OK with an empty response if middleware completed without any issue', async () => {
     customMiddleware = () => () => {
-      return {
-        data,
-      };
+      return {};
     };
     customMiddleware2 =
       ({ STATUS: { OK } }) =>
       req => {
-        return {
-          data: { ...req.locals, ...data2 },
-          code: OK,
-        };
+        return { code: OK };
       };
     coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
 
     app = swaggen(coreConfig);
 
-    const res = await request(app).get('/api/count/lol/test');
-    expect(res.status).toEqual(200);
-    expect(res.body).toEqual({ ...data, ...data2 });
+    const { body, status } = await request(app).get('/api/count/lol/test');
+    expect(status).toEqual(HTTP_STATUS.OK);
+    expect(body).toEqual('');
   });
-  it('Should return 500 if no code provided by last middleware ', async () => {
+  it('should return a 200 OK with an empty response if middleware completed without any issue', async () => {
+    const data = {
+      some: 'facts',
+    };
+    customMiddleware = () => () => {
+      return {};
+    };
+    customMiddleware2 =
+      ({ STATUS: { OK } }) =>
+      req => {
+        return { code: OK, data };
+      };
+    coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
+
+    app = swaggen(coreConfig);
+
+    const { body, status } = await request(app).get('/api/count/lol/test');
+    expect(status).toEqual(HTTP_STATUS.OK);
+    expect(body).toEqual(data);
+  });
+  it('should return a 500 ERROR if no status code was provided by last middleware', async () => {
     const data = {
       some: 'facts',
     };
@@ -108,103 +136,11 @@ describe('test handling middleware functions', () => {
 
     app = swaggen(coreConfig);
 
-    const res = await request(app).get('/api/count/lol/test');
-    expect(res.status).toEqual(500);
-  });
-  it('Should return 500 if first middleware threw error and not execute second one', async () => {
-    const data = {
-      some: 'facts',
-    };
-    customMiddleware = () => () => {
-      throw new Error('ohoh');
-    };
-    coreConfig.customMiddlewares = {
-      customMiddleware,
-      customMiddleware2,
-    };
-
-    app = swaggen(coreConfig);
-
-    const { status, body } = await request(app).get('/api/count/lol/test');
+    const { body, status } = await request(app).get('/api/count/lol/test');
     expect(status).toEqual(500);
-
-    expect(body).toEqual({
+    expect(body).toMatchObject({
+      name: coreErrors.middleware.noStatusCode,
       code: 500,
-      errorId: expect.any(String),
-      name: coreErrors.middleware.executionError,
-      trace: [coreErrors.middleware.executionError],
-    });
-
-    expect(middleware2).not.toHaveBeenCalled();
-  });
-  it('Should properly propagate error data and use initial error code and status', async () => {
-    const errorDetails = {
-      message: 'some error',
-      errorCode: 'my error code',
-      statusCode: 499,
-      data: {
-        some: {
-          error: 'data',
-        },
-      },
-    };
-    customMiddleware = (container: DefaultContainer) => () => {
-      throw container.throwError(errorDetails);
-    };
-    coreConfig.customMiddlewares = {
-      customMiddleware,
-      customMiddleware2,
-    };
-
-    app = swaggen(coreConfig);
-
-    const { status, body } = await request(app).get('/api/count/lol/test');
-    expect(status).toEqual(errorDetails.statusCode);
-
-    expect(body).toEqual({
-      code: errorDetails.statusCode,
-      errorId: expect.any(String),
-      name: coreErrors.middleware.executionError,
-      trace: [coreErrors.middleware.executionError, errorDetails.errorCode],
-      data: errorDetails.data,
-    });
-
-    expect(middleware2).not.toHaveBeenCalled();
-  });
-  it('Should return pong on a ping request (default middleware)', async () => {
-    customMiddleware = (container: DefaultContainer) => () => {
-      throw container.throwError(errorDetails);
-    };
-    coreConfig.customMiddlewares = {};
-    coreConfig.swagger.paths = {};
-
-    console.log(coreConfig);
-    app = swaggen(coreConfig);
-
-    const { status, body } = await request(app).get('/api/ping');
-    console.log(body);
-    expect(status).toEqual(200);
-
-    expect(body).toEqual({
-      message: 'pong',
-    });
-  });
-  it('Should return pong on a ping request (health check server on same port)', async () => {
-    customMiddleware = (container: DefaultContainer) => () => {
-      throw container.throwError(errorDetails);
-    };
-    coreConfig.customMiddlewares = {};
-    coreConfig.swagger.paths = {};
-
-    console.log(coreConfig);
-    app = swaggen(coreConfig);
-
-    const { status, body } = await request(app).get('/_health/ping');
-    console.log(body);
-    expect(status).toEqual(200);
-
-    expect(body).toEqual({
-      message: 'pong',
     });
   });
 });
