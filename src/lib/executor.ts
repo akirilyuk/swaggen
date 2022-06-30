@@ -1,22 +1,24 @@
-// @ts-nocheck
-import { DefaultContainer } from 'src';
+import { NextFunction, Response } from 'express';
+import {
+  DefaultContainer,
+  MiddlewareFunction,
+  SwaggenRequest,
+} from '../interfaces';
 
 const DEFAULT_CONTENT_TYPE = 'application/json';
-const setHeaders = (req, res) => {
+const setHeaders = (req: SwaggenRequest, res: Response) => {
   res.set('Content-Type', DEFAULT_CONTENT_TYPE);
 
   if (req.setHeaders && typeof req.setHeaders === 'object') {
-    const headerKeys = Object.keys(req.setHeaders);
-    headerKeys.forEach(headerKey => {
-      const headerValue = req.setHeaders[headerKey];
-      res.set(headerKey, headerValue);
+    Object.entries(req.setHeaders).forEach(([header, value]) => {
+      res.set(header, value);
     });
   }
 };
 
 export default <C>(container: C & DefaultContainer) =>
-  (middlewares: Middleware<any>[]) =>
-  async (req, res, next) => {
+  (middlewares: MiddlewareFunction<any>[]) =>
+  async (req: SwaggenRequest, res: Response, next: NextFunction) => {
     let finalResult = null;
     let finalCode = null;
     let allFinished = false;
@@ -61,7 +63,7 @@ export default <C>(container: C & DefaultContainer) =>
     }
     setHeaders(req, res);
 
-    res.status(finalCode).send(finalResult);
+    res.status(finalCode as number).send(finalResult);
 
     return next();
   };

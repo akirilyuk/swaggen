@@ -1,16 +1,18 @@
-import { DefaultContainer } from 'src';
+import { DefaultContainer } from '../interfaces';
+import { RoutesToMiddlewares } from './extractor';
 
 const restGenerator = (deps: DefaultContainer) => {
   const router = deps.app.Router();
-  Object.keys(deps.extractor).map(p =>
-    Object.keys(deps.extractor[p]).map(v => {
-      deps.logger.debug({ path: p, method: v }, 'registered route');
-      return router[v](
-        p
-          .split('/')
-          .map(x => (x.startsWith('{') ? x.replace('{', ':').slice(0, -1) : x))
-          .join('/'),
-        deps.executor(deps.extractor[p][v].map((n: string) => deps[n])),
+  Object.keys(deps.extractor as RoutesToMiddlewares).map(path =>
+    Object.keys(deps.extractor[path]).map(method => {
+      const normalizedPath = path
+        .split('/')
+        .map(x => (x.startsWith('{') ? x.replace('{', ':').slice(0, -1) : x))
+        .join('/');
+      deps.logger.debug({ path: normalizedPath, method }, 'registered route');
+      return router[method](
+        normalizedPath,
+        deps.executor(deps.extractor[path][method].map((n: string) => deps[n])),
       );
     }),
   );

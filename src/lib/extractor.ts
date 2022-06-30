@@ -1,4 +1,4 @@
-import { DefaultContainer } from '../../src';
+import { DefaultContainer } from '../interfaces';
 export interface RoutesToMiddlewares {
   [path: string]: { [verb: string]: string[] };
 }

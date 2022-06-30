@@ -13,4 +13,5 @@ export interface MiddlewareFactory<C, T> {
 
 export interface SwaggenRequest extends Request {
   locals: { [key: string]: any };
+  setHeaders: { [key: string]: string };
 }

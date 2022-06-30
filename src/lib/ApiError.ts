@@ -1,11 +1,11 @@
-import { DefaultContainer } from 'src';
+import { DefaultContainer } from '../interfaces';
 
 export interface ApiErrorOptions {
   message: string;
   errorCode: string;
   statusCode: number;
   trace: string[];
-  originalError?: Error;
+  originalError?: Error | unknown;
   data?: any;
   errorId: string;
 }
@@ -14,23 +14,23 @@ export interface CreateErrorParams {
   message: string;
   errorCode: string;
   statusCode?: number;
-  originalError?: Error;
+  originalError?: Error | unknown;
   data?: any;
 }
 
-export interface IApiError {
+export interface ApiError {
   trace: string[];
   errorId: string;
   data: any;
-  originalError?: Error;
+  originalError?: Error | unknown;
   code: number;
 }
 
-export class ApiError extends Error implements IApiError {
+export class ApiError extends Error implements ApiError {
   trace: string[];
   errorId: string;
   data: any;
-  originalError?: Error;
+  originalError?: Error | unknown;
   code: number;
   constructor(opts: ApiErrorOptions) {
     const {
@@ -47,7 +47,7 @@ export class ApiError extends Error implements IApiError {
 
     this.code = statusCode;
     this.data = data;
-    this.stack = originalError?.stack;
+    this.stack = (originalError as Error)?.stack;
     this.trace = trace;
     this.originalError = originalError;
     this.errorId = errorId;
@@ -68,7 +68,8 @@ export interface createError {
   (opts: CreateErrorParams): ApiError;
 }
 
-export default (container: DefaultContainer) =>
+const errorCreatorFactory =
+  (container: DefaultContainer) =>
   (opts: CreateErrorParams): ApiError => {
     const { originalError, message, data, errorCode, statusCode } = opts;
 
@@ -93,3 +94,5 @@ export default (container: DefaultContainer) =>
 
     return new ApiError(errorOpts);
   };
+
+export default errorCreatorFactory;

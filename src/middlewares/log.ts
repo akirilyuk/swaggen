@@ -2,7 +2,7 @@
 
 import { v4 as uuidV4 } from 'uuid';
 import { Request } from 'express';
-import { DefaultContainer } from 'src';
+import { DefaultContainer } from '../interfaces';
 
 export default (container: DefaultContainer) => (req: Request) => {
   const {

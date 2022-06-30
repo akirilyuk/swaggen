@@ -1,13 +1,9 @@
 //@ts-nocheck
-import {
-  createContainer,
-  asFunction,
-  asClass,
-  asValue,
-  Resolver,
-} from 'awilix';
+import { createContainer, asFunction, asClass, asValue } from 'awilix';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
+
+import status from 'http-status-codes';
 
 // MAYBE WE NEED THIS ONE SOMEDAY
 //import mirrorKeys from('object-key-mirror');
@@ -15,67 +11,29 @@ import { compose } from 'compose-middleware';
 import xmlBodyParser from 'express-xml-bodyparser';
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
-import status from 'http-status-codes';
-import extractor from './lib/extractor';
-import restGenerator from './lib/restGenerator';
+
+import extractorFactory from './lib/extractor';
+import restGeneratorFactory from './lib/restGenerator';
 import defaultMiddlewares from './middlewares';
 const defaultSwagger = require('./doc/swagger.json');
 import coreErrors from './constants/errors';
 import defaultConfig from './constants/defaults';
 const packageJson = require('../package.json');
 import pino, { Logger } from 'pino';
-import executor from './lib/executor';
-import throwError, { ApiError, createError } from './lib/ApiError';
+import executorFactory from './lib/executor';
+import errorCreatorFactory from './lib/ApiError';
+import { ApiError } from './lib/ApiError';
 import { v4 } from 'uuid';
 import {
   MiddlewareFactory,
   MiddlewareFunction,
   MiddlewareResult,
-} from './interfaces/middleware';
+} from './interfaces';
 
 const logger = pino({
   level:
     process.env.NODE_ENV?.toLowerCase() === 'production' ? 'info' : 'debug',
 });
-
-export interface DefaultContainer {
-  STATUS: typeof status;
-  logger: Logger;
-  errorHandler: Function;
-  uuidV4: typeof v4;
-  createError: createError;
-  swagger: any;
-  extractor: any;
-  executor: any;
-  app: any;
-  coreErrors: any;
-  [key: string]: any;
-  coreAppConfig: any;
-}
-
-export interface SwaggenService {
-  [key: string]: any;
-}
-
-export interface SwaggenConfig {
-  [key: string]: any;
-}
-
-export interface HealthConfig {}
-
-export interface SwaggenOptions {
-  swagger: any;
-  customMiddlewares: {
-    [key: string]: MiddlewareFactory;
-  };
-  customServices: {
-    [key: string]: Resolver;
-  };
-}
-
-export interface Swaggen<T> {
-  (req): MiddlewareResult<T>;
-}
 
 export const swaggen = ({
   swagger,
@@ -97,17 +55,17 @@ export const swaggen = ({
     coreHealthConfig: asValue(healthConfig),
     currentEnvironment: asValue(mergedConfig.currentEnvironment),
     STATUS: asValue(status),
-    extractor: asFunction(extractor),
-    restGenerator: asFunction(restGenerator),
+    extractor: asFunction(extractorFactory),
+    restGenerator: asFunction(restGeneratorFactory),
     app: asValue(express),
     compose: asValue(compose),
-    createError: asFunction(throwError),
+    createError: asFunction(errorCreatorFactory),
     swagger: asValue({
       paths: { ...swagger.paths, ...defaultSwagger.paths },
     }),
     coreErrors: asValue(coreErrors),
     logger: asValue(logger),
-    executor: asFunction(executor),
+    executor: asFunction(executorFactory),
     uuidV4: asValue(v4),
     ApiError: asValue(ApiError),
     ...customServices,
@@ -156,17 +114,14 @@ export const swaggen = ({
     .use(
       '/api',
       (req, res, next) => {
-        console.log('here 2');
         if (req.method !== 'GET' && req.method !== 'OPTIONS') {
           if (req.headers['content-type'] === 'application/xml') {
             return mergedConfig.parseXmlAsJSON
               ? xmlToJsonParser(req, res, next)
               : xmlBodyParserInited(req, res, next);
           }
-          console.log('here 1');
           return jsonBodyParser(req, res, next);
         }
-        console.log('here 3');
         return next();
       },
       container.resolve('restGenerator'),
@@ -178,8 +133,10 @@ export const swaggen = ({
       message: 'pong',
     });
   });
+  // todo add general error handler for normal express middlewares
   app.use((err, req, res, next) => {
-    console.log(err.message);
+    const error = throwError();
+    logger.error({ errorMessage: err.message });
     next(err);
   });
   const swaggenApp = app.listen(mergedConfig.port);
