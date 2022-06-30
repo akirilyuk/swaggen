@@ -52,7 +52,7 @@ describe('test handling middleware functions', () => {
     },
     customServices: {},
     healthConfig: { services: [], name: 'test-app-name' },
-    coreAppConfig: {
+    config: {
       appName: 'test-app-name',
       port: 3000,
       metrics: {

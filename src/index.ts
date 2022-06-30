@@ -1,6 +1,11 @@
-//@ts-nocheck
-import { createContainer, asFunction, asClass, asValue } from 'awilix';
-import express from 'express';
+import {
+  createContainer,
+  asFunction,
+  asClass,
+  asValue,
+  Resolver,
+} from 'awilix';
+import express, { Request, Response, Express, RequestHandler } from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 import status from 'http-status-codes';
@@ -21,38 +26,47 @@ import defaultConfig from './constants/defaults';
 const packageJson = require('../package.json');
 import pino, { Logger } from 'pino';
 import executorFactory from './lib/executor';
-import errorCreatorFactory from './lib/ApiError';
+import errorCreatorFactory, { createError } from './lib/ApiError';
 import { ApiError } from './lib/ApiError';
 import { v4 } from 'uuid';
 import {
+  DefaultContainer,
   MiddlewareFactory,
   MiddlewareFunction,
   MiddlewareResult,
+  Swaggen,
+  SwaggenOptions,
 } from './interfaces';
+import { NextFunction } from 'express-serve-static-core';
+
+interface Dictionary<T> {
+  [key: string]: T;
+}
 
 const logger = pino({
   level:
     process.env.NODE_ENV?.toLowerCase() === 'production' ? 'info' : 'debug',
 });
 
-export const swaggen = ({
+export function swaggen<C extends DefaultContainer>({
   swagger,
   customMiddlewares = {},
-  customServices,
-  healthConfig,
-  coreAppConfig,
-}) => {
+  customServices = {},
+  config,
+}: SwaggenOptions<unknown>) {
   const container = createContainer();
 
-  const combinedMiddlewares = { ...defaultMiddlewares, ...customMiddlewares };
+  const combinedMiddlewares: Dictionary<MiddlewareFactory<C, unknown>> = {
+    ...defaultMiddlewares,
+    ...customMiddlewares,
+  };
 
   const mergedConfig = {
     ...defaultConfig,
-    ...coreAppConfig,
+    ...config,
   };
-  const config = {
+  const dependencies: Dictionary<Resolver<unknown>> = {
     coreAppConfig: asValue(mergedConfig),
-    coreHealthConfig: asValue(healthConfig),
     currentEnvironment: asValue(mergedConfig.currentEnvironment),
     STATUS: asValue(status),
     extractor: asFunction(extractorFactory),
@@ -72,16 +86,16 @@ export const swaggen = ({
   };
 
   Object.keys(combinedMiddlewares).map(m => {
-    config[m] = asFunction(combinedMiddlewares[m]);
+    dependencies[m] = asFunction(combinedMiddlewares[m]);
     return true;
   });
 
-  container.register(config);
+  container.register(dependencies);
 
   const jsonBodyParser = bodyParser.json();
   const xmlBodyParserInited = xmlBodyParser();
 
-  const xmlToJsonParser = (request, response, nextCB) => {
+  const xmlToJsonParser: RequestHandler = (request, response, nextCB) => {
     let body = '';
     request.on('data', data => {
       body += data;
@@ -89,11 +103,10 @@ export const swaggen = ({
       // Too much POST data, kill the connection!
       // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
       if (body.length > 1e6) {
-        response.status = 400;
-        response.send({
+        response.status(status.BAD_REQUEST).send({
           error: 'stop flooding!',
         });
-        request.connection.destroy();
+        request.socket.destroy();
       }
     });
 
@@ -108,12 +121,13 @@ export const swaggen = ({
     });
   };
 
+  //@ts-ignore
   const app = (container.resolve('app') as Express)()
     .use('*', cors())
     .use('/doc', swaggerUi.serve, swaggerUi.setup(swagger))
     .use(
       '/api',
-      (req, res, next) => {
+      (req: Request, res: Response, next: NextFunction) => {
         if (req.method !== 'GET' && req.method !== 'OPTIONS') {
           if (req.headers['content-type'] === 'application/xml') {
             return mergedConfig.parseXmlAsJSON
@@ -127,15 +141,14 @@ export const swaggen = ({
       container.resolve('restGenerator'),
     );
 
-  app.use('/_health/ping', (req, res) => {
-    res.status = 200;
-    res.send({
+  app.use('/_health/ping', (req: Request, res: Response) => {
+    res.status(200).send({
       message: 'pong',
     });
   });
   // todo add general error handler for normal express middlewares
-  app.use((err, req, res, next) => {
-    const error = throwError();
+  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    const error = container.resolve<createError>('createError');
     logger.error({ errorMessage: err.message });
     next(err);
   });
@@ -143,7 +156,7 @@ export const swaggen = ({
   swaggenApp.awilixContainer = container;
   swaggenApp.expressApp = app;
   return swaggenApp;
-};
+}
 
 export { MiddlewareFactory, MiddlewareFunction, MiddlewareResult };
 

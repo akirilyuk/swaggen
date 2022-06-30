@@ -21,10 +21,11 @@ export interface SwaggenOptions<C> {
   customServices: {
     [key: string]: Resolver<any>;
   };
+  config: SwaggenConfig;
 }
 
 export interface Swaggen<C> {
-  (options: SwaggenOptions<C>): MiddlewareResult<T>;
+  (options: SwaggenOptions<C>): {};
 }
 
 export interface DefaultContainer {
