@@ -1,8 +1,9 @@
 import { Resolver } from 'awilix';
+import status from 'http-status-codes';
 import { Logger } from 'pino';
 import { createError } from 'src/lib/ApiError';
 import { v4 } from 'uuid';
-import status from 'http-status-codes';
+
 import { MiddlewareFactory, MiddlewareResult } from './middleware';
 
 export interface SwaggenService {

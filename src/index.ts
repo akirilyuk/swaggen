@@ -1,34 +1,26 @@
 import {
-  createContainer,
-  asFunction,
-  asClass,
-  asValue,
   Resolver,
+  asClass,
+  asFunction,
+  asValue,
+  createContainer,
 } from 'awilix';
-import express, { Request, Response, Express, RequestHandler } from 'express';
-import swaggerUi from 'swagger-ui-express';
-
+import * as bodyParser from 'body-parser';
+import { compose } from 'compose-middleware';
+import cors from 'cors';
+import express, { Express, Request, RequestHandler, Response } from 'express';
+import { NextFunction } from 'express-serve-static-core';
+import xmlBodyParser from 'express-xml-bodyparser';
 import status from 'http-status-codes';
+import pino, { Logger } from 'pino';
+import swaggerUi from 'swagger-ui-express';
 
 // MAYBE WE NEED THIS ONE SOMEDAY
 //import mirrorKeys from('object-key-mirror');
-import { compose } from 'compose-middleware';
-import xmlBodyParser from 'express-xml-bodyparser';
-import * as bodyParser from 'body-parser';
-import cors from 'cors';
-
-import extractorFactory from './lib/extractor';
-import restGeneratorFactory from './lib/restGenerator';
-import defaultMiddlewares from './middlewares';
-const defaultSwagger = require('./doc/swagger.json');
-import coreErrors from './constants/errors';
-import defaultConfig from './constants/defaults';
-const packageJson = require('../package.json');
-import pino, { Logger } from 'pino';
-import executorFactory from './lib/executor';
-import errorCreatorFactory, { createError } from './lib/ApiError';
-import { ApiError } from './lib/ApiError';
 import { v4 } from 'uuid';
+
+import defaultConfig from './constants/defaults';
+import coreErrors from './constants/errors';
 import {
   DefaultContainer,
   MiddlewareFactory,
@@ -37,7 +29,14 @@ import {
   Swaggen,
   SwaggenOptions,
 } from './interfaces';
-import { NextFunction } from 'express-serve-static-core';
+import errorCreatorFactory, { ApiError, createError } from './lib/ApiError';
+import executorFactory from './lib/executor';
+import extractorFactory from './lib/extractor';
+import restGeneratorFactory from './lib/restGenerator';
+import defaultMiddlewares from './middlewares';
+
+const packageJson = require('../package.json');
+const defaultSwagger = require('./doc/swagger.json');
 
 interface Dictionary<T> {
   [key: string]: T;

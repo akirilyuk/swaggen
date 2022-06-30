@@ -4,13 +4,12 @@ import {
   MiddlewareResult,
   SwaggenRequest,
 } from './middleware';
-
 import {
-  SwaggenService,
+  DefaultContainer,
   Swaggen,
   SwaggenConfig,
   SwaggenOptions,
-  DefaultContainer,
+  SwaggenService,
 } from './swaggen';
 
 // Middleware logic and handling

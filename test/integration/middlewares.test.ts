@@ -1,18 +1,19 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-use-before-define */
 //@ts-nocheck
-const nock = require('nock');
+import { StatusCodes as HTTP_STATUS } from 'http-status-codes';
 
-const request = require('supertest');
-import coreErrors from '../../src/constants/errors';
 import {
-  swaggen,
-  asFunction,
   DefaultContainer,
   MiddlewareFactory,
   MiddlewareFunction,
+  asFunction,
+  swaggen,
 } from '../../src';
-import { StatusCodes as HTTP_STATUS } from 'http-status-codes';
+import coreErrors from '../../src/constants/errors';
+
+const nock = require('nock');
+const request = require('supertest');
 
 describe('test handling middleware functions', () => {
   let customMiddleware;

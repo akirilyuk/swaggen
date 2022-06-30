@@ -1,7 +1,8 @@
 // @ts-nocheck
 
-import { v4 as uuidV4 } from 'uuid';
 import { Request } from 'express';
+import { v4 as uuidV4 } from 'uuid';
+
 import { DefaultContainer } from '../interfaces';
 
 export default (container: DefaultContainer) => (req: Request) => {
