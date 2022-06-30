@@ -15,7 +15,6 @@
     "test:all": "yarn lint && yarn test:cov && yarn audit && yarn build",
     "test:cov": "jest --coverage --detectOpenHandles",
     "test:watch": "jest --watch",
-    "start": "node dist/src/main.js",
     "start:dev": "tsc-watch -p tsconfig.json --onSuccess \"node dist/src/main.js\"",
     "security": "yarn audit --groups dependencies optionalDependencies --registry=https://registry.npmjs.org",
     "outofdate": "yarn outdated",

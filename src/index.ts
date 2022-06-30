@@ -7,6 +7,7 @@ import {
 } from 'awilix';
 import * as bodyParser from 'body-parser';
 import { compose } from 'compose-middleware';
+import e from 'cors';
 import cors from 'cors';
 import express, { Express, Request, RequestHandler, Response } from 'express';
 import { NextFunction } from 'express-serve-static-core';
@@ -147,8 +148,12 @@ export function swaggen<C extends DefaultContainer>({
   });
   // todo add general error handler for normal express middlewares
   app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    const error = container.resolve<createError>('createError');
-    logger.error({ errorMessage: err.message });
+    const error = container.resolve<createError>('createError')({
+      errorCode: coreErrors.middleware.uncatchedError,
+      statusCode: status.INTERNAL_SERVER_ERROR,
+      message: 'something went wrong',
+    });
+    logger.error({ error }, 'middleware has thrown an uncatched error');
     next(err);
   });
   const swaggenApp = app.listen(mergedConfig.port);
