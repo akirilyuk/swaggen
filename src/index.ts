@@ -15,6 +15,7 @@ import xmlBodyParser from 'express-xml-bodyparser';
 import status from 'http-status-codes';
 import pino, { Logger } from 'pino';
 import swaggerUi from 'swagger-ui-express';
+import { merge } from 'lodash';
 
 // MAYBE WE NEED THIS ONE SOMEDAY
 //import mirrorKeys from('object-key-mirror');
@@ -24,10 +25,12 @@ import defaultConfig from './constants/defaults';
 import coreErrors from './constants/errors';
 import {
   DefaultContainer,
+  DefaultContainerAwilix,
   MiddlewareFactory,
   MiddlewareFunction,
   MiddlewareResult,
   Swaggen,
+  SwaggenConfig,
   SwaggenOptions,
 } from './interfaces';
 import errorCreatorFactory, { ApiError, createError } from './lib/ApiError';
@@ -53,19 +56,17 @@ export function swaggen<C extends DefaultContainer>({
   customMiddlewares = {},
   customServices = {},
   config,
-}: SwaggenOptions<unknown>) {
+}: SwaggenOptions<C>) {
   const container = createContainer();
 
-  const combinedMiddlewares: Dictionary<MiddlewareFactory<C, unknown>> = {
+  const combinedMiddlewares: Dictionary<MiddlewareFactory<C, any>> = {
     ...defaultMiddlewares,
     ...customMiddlewares,
   };
 
-  const mergedConfig = {
-    ...defaultConfig,
-    ...config,
-  };
-  const dependencies: Dictionary<Resolver<unknown>> = {
+  const mergedConfig: SwaggenConfig = merge({}, defaultConfig, config);
+  //@ts-ignore
+  const dependencies: DefaultContainerAwilix = {
     coreAppConfig: asValue(mergedConfig),
     currentEnvironment: asValue(mergedConfig.currentEnvironment),
     STATUS: asValue(status),

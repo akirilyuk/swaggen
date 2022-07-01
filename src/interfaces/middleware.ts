@@ -1,10 +1,11 @@
+import { Request } from 'express';
 export interface MiddlewareResult<T> {
   code?: number;
   data?: T;
 }
 
 export interface MiddlewareFunction<T> {
-  (req: Request): MiddlewareResult<T>;
+  (req: SwaggenRequest): MiddlewareResult<T>;
 }
 
 export interface MiddlewareFactory<C, T> {
@@ -12,6 +13,8 @@ export interface MiddlewareFactory<C, T> {
 }
 
 export interface SwaggenRequest extends Request {
-  locals: { [key: string]: any };
-  setHeaders: { [key: string]: string };
+  locals?: { [key: string]: any };
+  setHeaders?: { [key: string]: string };
+  uuid?: string;
+  executionStartTime: number;
 }

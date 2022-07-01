@@ -12,7 +12,10 @@ const restGenerator = (deps: DefaultContainer) => {
       deps.logger.debug({ path: normalizedPath, method }, 'registered route');
       return router[method](
         normalizedPath,
-        deps.executor(deps.extractor[path][method].map((n: string) => deps[n])),
+        deps.executor([
+          deps.log,
+          ...deps.extractor[path][method].map((n: string) => deps[n]),
+        ]),
       );
     }),
   );

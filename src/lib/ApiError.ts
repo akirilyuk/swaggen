@@ -65,14 +65,24 @@ export class ApiError extends Error implements ApiError {
 }
 
 export interface createError {
-  (opts: CreateErrorParams): ApiError;
+  ({
+    originalError,
+    message,
+    data,
+    errorCode,
+    statusCode,
+  }: CreateErrorParams): ApiError;
 }
 
 const errorCreatorFactory =
   (container: DefaultContainer) =>
-  (opts: CreateErrorParams): ApiError => {
-    const { originalError, message, data, errorCode, statusCode } = opts;
-
+  ({
+    originalError,
+    message,
+    data,
+    errorCode,
+    statusCode,
+  }: CreateErrorParams): ApiError => {
     const errorOpts: ApiErrorOptions = {
       errorId:
         originalError instanceof ApiError

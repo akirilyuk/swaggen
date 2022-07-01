@@ -19,11 +19,13 @@ const setHeaders = (req: SwaggenRequest, res: Response) => {
 
 export default <C>(container: C & DefaultContainer) =>
   (middlewares: MiddlewareFunction<any>[]) =>
-  async (req: SwaggenRequest, res: Response, next: NextFunction) => {
+  async (expressReq: Request, res: Response, next: NextFunction) => {
     let finalResult = null;
     let finalCode = null;
     let allFinished = false;
     let error = null;
+
+    const req = expressReq as unknown as SwaggenRequest;
 
     for (let i = 0; i < middlewares.length; i++) {
       try {
@@ -65,6 +67,13 @@ export default <C>(container: C & DefaultContainer) =>
     setHeaders(req, res);
 
     res.status(finalCode as number).send(finalResult);
+
+    if (container.coreAppConfig.logger?.enabled) {
+      req.locals?.localLogger.info(
+        { executionTime: Date.now() - req.executionStartTime },
+        'request processed',
+      );
+    }
 
     return next();
   };

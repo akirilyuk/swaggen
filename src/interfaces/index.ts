@@ -10,6 +10,7 @@ import {
   SwaggenConfig,
   SwaggenOptions,
   SwaggenService,
+  DefaultContainerAwilix,
 } from './swaggen';
 
 // Middleware logic and handling
@@ -27,4 +28,5 @@ export {
   SwaggenOptions,
   Swaggen,
   DefaultContainer,
+  DefaultContainerAwilix,
 };

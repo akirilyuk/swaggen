@@ -8,9 +8,8 @@ export default {
   },
   logger: {
     forbiddenDataKeys: ['example'],
+    enabled: true,
+    logRequestBody: false,
   },
   parseXmlAsJSON: false,
-  gatekeeper: {
-    enabled: false,
-  },
 };

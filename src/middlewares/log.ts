@@ -1,51 +1,54 @@
-// @ts-nocheck
+import { DefaultContainer, SwaggenRequest } from '../interfaces';
 
-import { Request } from 'express';
-import { v4 as uuidV4 } from 'uuid';
-
-import { DefaultContainer } from '../interfaces';
-
-export default (container: DefaultContainer) => (req: Request) => {
-  const {
+export default ({
     logger,
-    createError: throwError,
+    createError,
     STATUS: { BAD_REQUEST },
-  } = container;
-  req.executionTime = Date.now();
-  if (req.query && req.query.requestId) {
-    if (
-      /^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})$/.test(
-        req.query.requestId,
-      )
-    ) {
-      req.uuid = req.query.requestId;
+    coreErrors,
+    uuidV4,
+    coreAppConfig,
+  }: DefaultContainer) =>
+  (req: SwaggenRequest) => {
+    req.executionStartTime = Date.now();
+    if (req.query && req.query.requestId) {
+      if (
+        /^([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})$/.test(
+          req.query.requestId as string,
+        )
+      ) {
+        req.uuid = req.query.requestId as string;
+      } else {
+        // @ts-ignore
+        throw createError({
+          message: 'provided request id does not match uuid format',
+          errorCode: coreErrors.middleware.log.malformedRequestId,
+          statusCode: BAD_REQUEST,
+        });
+      }
     } else {
-      req.state = BAD_REQUEST;
-      // @ts-ignore
-      throw throwError({});
+      req.uuid = uuidV4();
     }
-  } else {
-    req.uuid = uuidV4();
-  }
-  const loggingContext = {
-    requestId: req.uuid,
-    params: { ...req.params },
-    query: { ...req.query },
-    path: req.route.path, // remove this once InfoSys is able to index logs correctly
-    method: req.method, // remove this once InfoSys is able to index logs correctly
-  };
-  delete loggingContext.query.requestId;
+    const loggingContext = {
+      requestId: req.uuid,
+      params: { ...req.params },
+      query: { ...req.query },
+      path: req.route.path,
+      method: req.method,
+    };
+    delete loggingContext.query.requestId;
 
-  logger.info(
-    'Request',
-    {
-      ...loggingContext,
-      body: { ...req.body },
-    },
-    null,
-    req,
-  );
-  return {
-    localLogger: logger.child(loggingContext),
+    logger.info(
+      coreAppConfig.logger?.logRequestBody
+        ? {
+            ...loggingContext,
+            body: req.body,
+          }
+        : loggingContext,
+      'request received',
+    );
+    return {
+      data: {
+        localLogger: logger.child(loggingContext),
+      },
+    };
   };
-};
