@@ -1,13 +1,6 @@
-import {
-  Resolver,
-  asClass,
-  asFunction,
-  asValue,
-  createContainer,
-} from 'awilix';
+import { asClass, asFunction, asValue, createContainer } from 'awilix';
 import * as bodyParser from 'body-parser';
 import { compose } from 'compose-middleware';
-import e from 'cors';
 import cors from 'cors';
 import express, { Express, Request, RequestHandler, Response } from 'express';
 import { NextFunction } from 'express-serve-static-core';
@@ -25,15 +18,18 @@ import defaultConfig from './constants/defaults';
 import coreErrors from './constants/errors';
 import {
   DefaultContainer,
-  DefaultContainerAwilix,
   MiddlewareFactory,
   MiddlewareFunction,
   MiddlewareResult,
   Swaggen,
   SwaggenConfig,
   SwaggenOptions,
+  SwaggenRequest,
+  wrapAllKeysWithResovler,
+  ApiError,
+  ApiErrorExternal,
 } from './interfaces';
-import errorCreatorFactory, { ApiError, createError } from './lib/ApiError';
+import errorCreatorFactory, { createError } from './lib/ApiError';
 import executorFactory from './lib/executor';
 import extractorFactory from './lib/extractor';
 import restGeneratorFactory from './lib/restGenerator';
@@ -66,7 +62,7 @@ export function swaggen<C extends DefaultContainer>({
 
   const mergedConfig: SwaggenConfig = merge({}, defaultConfig, config);
   //@ts-ignore
-  const dependencies: DefaultContainerAwilix = {
+  const dependencies: WrapContainerDepsWithResolver<C> = {
     coreAppConfig: asValue(mergedConfig),
     currentEnvironment: asValue(mergedConfig.currentEnvironment),
     STATUS: asValue(status),
@@ -82,7 +78,6 @@ export function swaggen<C extends DefaultContainer>({
     logger: asValue(logger),
     executor: asFunction(executorFactory),
     uuidV4: asValue(v4),
-    ApiError: asValue(ApiError),
     ...customServices,
   };
 
@@ -155,6 +150,7 @@ export function swaggen<C extends DefaultContainer>({
       message: 'something went wrong',
     });
     logger.error({ error }, 'middleware has thrown an uncatched error');
+    res.status(status.INTERNAL_SERVER_ERROR).send(error);
     next(err);
   });
   const swaggenApp = app.listen(mergedConfig.port);
@@ -163,6 +159,17 @@ export function swaggen<C extends DefaultContainer>({
   return swaggenApp;
 }
 
-export { MiddlewareFactory, MiddlewareFunction, MiddlewareResult };
+export {
+  MiddlewareFactory,
+  MiddlewareFunction,
+  MiddlewareResult,
+  SwaggenRequest,
+};
 
 export { asFunction, asValue, asClass };
+
+export { DefaultContainer, Swaggen, SwaggenConfig, SwaggenOptions };
+
+export { wrapAllKeysWithResovler };
+
+export default swaggen;
