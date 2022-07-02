@@ -1,11 +1,10 @@
 export default {
   middleware: {
-    executionError: 'com.akirilyuk.swaggen.error.middleware.execution',
-    noStatusCode: 'com.akirilyuk.swaggen.error.middleware.no-status-code',
-    uncatchedError: 'com.akirilyuk.swaggen.error.middleware.uncatched-error',
+    executionError: 'swaggen.error.middleware.execution',
+    noStatusCode: 'swaggen.error.middleware.no-status-code',
+    uncatchedError: 'swaggen.error.middleware.uncatched-error',
     log: {
-      malformedRequestId:
-        'com.akirilyuk.swaggen.error.middleware.malformed-request-id',
+      malformedRequestId: 'swaggen.error.middleware.malformed-request-id',
     },
   },
 };

@@ -4,14 +4,21 @@ import {
   MiddlewareResult,
   SwaggenRequest,
 } from './middleware';
+
 import {
   DefaultContainer,
   Swaggen,
   SwaggenConfig,
   SwaggenOptions,
   SwaggenService,
-  DefaultContainerAwilix,
+  SwaggenServerInstance,
 } from './swaggen';
+
+import { wrapAllKeysWithResovler, makeAllKeysPrivateExceptSome } from './utils';
+
+import { ApiError, ApiErrorExternal, ApiErrorInterface } from './errors';
+
+import { swaggenErrors, defaultConfig } from '../constants';
 
 // Middleware logic and handling
 export {
@@ -26,7 +33,16 @@ export {
   SwaggenService,
   SwaggenConfig,
   SwaggenOptions,
+  SwaggenServerInstance,
   Swaggen,
   DefaultContainer,
-  DefaultContainerAwilix,
 };
+
+// utils
+export { wrapAllKeysWithResovler, makeAllKeysPrivateExceptSome };
+
+// defaults
+export { swaggenErrors, defaultConfig };
+
+// errors
+export { ApiError, ApiErrorExternal, ApiErrorInterface };

@@ -4,11 +4,11 @@ export interface MiddlewareResult<T> {
   data?: T;
 }
 
-export interface MiddlewareFunction<T> {
+export interface MiddlewareFunction<T = any | void> {
   (req: SwaggenRequest): MiddlewareResult<T>;
 }
 
-export interface MiddlewareFactory<C, T> {
+export interface MiddlewareFactory<C, T = any | void> {
   (container: C): MiddlewareFunction<T>;
 }
 

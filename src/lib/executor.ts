@@ -1,6 +1,8 @@
 import { NextFunction, Response } from 'express';
+import { Logger } from 'pino';
 
 import {
+  ApiError,
   DefaultContainer,
   MiddlewareFunction,
   SwaggenRequest,
@@ -18,10 +20,10 @@ const setHeaders = (req: SwaggenRequest, res: Response) => {
 };
 
 export default <C>(container: C & DefaultContainer) =>
-  (middlewares: MiddlewareFunction<any>[]) =>
+  (middlewares: MiddlewareFunction[]) =>
   async (expressReq: Request, res: Response, next: NextFunction) => {
     let finalResult = null;
-    let finalCode = null;
+    let finalCode = 0;
     let allFinished = false;
     let error = null;
 
@@ -29,7 +31,7 @@ export default <C>(container: C & DefaultContainer) =>
 
     for (let i = 0; i < middlewares.length; i++) {
       try {
-        const { code, data } = await middlewares[i](req);
+        const { code, data } = (await middlewares[i](req)) || {};
         if (code) {
           finalCode = code;
           finalResult = data;
@@ -45,14 +47,19 @@ export default <C>(container: C & DefaultContainer) =>
           originalError: err,
           errorCode: container.coreErrors.middleware.executionError,
         });
-        container.logger.error('middleware execution failed', error);
+        if (!(err instanceof ApiError)) {
+          container.logger.error(
+            { error },
+            'middleware execution failed with unexpected error',
+          );
+        }
       }
       if (i === middlewares.length - 1) {
         allFinished = true;
       }
     }
 
-    if (!finalCode) {
+    if (!error && !finalCode) {
       error = container.createError({
         message: 'app did not provide status code',
         originalError: {},
@@ -61,16 +68,27 @@ export default <C>(container: C & DefaultContainer) =>
       });
     }
     if (error) {
-      finalResult = error.toJSON();
-      finalCode = error.code;
+      finalResult = error.toExternalFormat();
+      finalCode = error.statusCode;
     }
     setHeaders(req, res);
 
     res.status(finalCode as number).send(finalResult);
 
     if (container.coreAppConfig.logger?.enabled) {
-      req.locals?.localLogger.info(
-        { executionTime: Date.now() - req.executionStartTime },
+      const logLevel =
+        finalCode < 300 ? 'info' : finalCode < 500 ? 'warn' : 'error';
+
+      let logData = {
+        executionTime: Date.now() - req.executionStartTime,
+        status: finalCode,
+      };
+      if (error) {
+        //@ts-ignore
+        logData.error = error;
+      }
+      (req.locals?.localLogger as unknown as Logger)[logLevel](
+        logData,
         'request processed',
       );
     }

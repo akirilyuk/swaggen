@@ -1,15 +1,15 @@
-import { Resolver } from 'awilix';
+import { Resolver, AwilixContainer } from 'awilix';
 import status from 'http-status-codes';
 import { Logger } from 'pino';
 import { createError } from 'src/lib/ApiError';
 import { v4 } from 'uuid';
 
 import { MiddlewareFactory, MiddlewareFunction } from './middleware';
-import swaggenErrors from './../constants/errors';
+import { swaggenErrors } from './../constants';
 
-export type addPrefixToObject<T, P extends string> = {
-  [K in keyof T]: Resolver<T[K]>;
-};
+import { Server } from 'http';
+import { Application } from 'express';
+
 export interface SwaggenService {
   [key: string]: any;
 }
@@ -36,9 +36,15 @@ export interface SwaggenOptions<C> {
   config: SwaggenConfig;
 }
 
+export interface SwaggenServerInstance extends Server {
+  awilixContainer: AwilixContainer;
+  expressApp: Application;
+}
+
 export interface Swaggen<C> {
   (options: SwaggenOptions<C>): {};
 }
+
 export interface DefaultMiddlewares {
   log: MiddlewareFunction<{ localLogger: Logger }>;
   ping: MiddlewareFunction<void>;
@@ -57,8 +63,3 @@ export interface DefaultContainer extends DefaultMiddlewares {
   coreAppConfig: SwaggenConfig;
   [key: string]: any;
 }
-
-export type DefaultContainerAwilix = addPrefixToObject<
-  DefaultContainer,
-  'Resolver'
->;

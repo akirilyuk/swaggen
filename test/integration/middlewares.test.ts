@@ -1,14 +1,21 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-use-before-define */
-//@ts-nocheck
-import { StatusCodes as HTTP_STATUS } from 'http-status-codes';
-
+import { BAD_REQUEST, StatusCodes as HTTP_STATUS } from 'http-status-codes';
 import {
+  ApiError,
+  ApiErrorExternal,
+  ApiErrorInterface,
+  SwaggenOptions,
+  SwaggenServerInstance,
+} from 'src/interfaces';
+
+import swaggen, {
   DefaultContainer,
   MiddlewareFactory,
   MiddlewareFunction,
   asFunction,
-  swaggen,
+  SwaggenConfig,
+  asValue,
 } from '../../src';
 import coreErrors from '../../src/constants/errors';
 
@@ -16,16 +23,13 @@ const nock = require('nock');
 const request = require('supertest');
 
 describe('test handling middleware functions', () => {
-  let customMiddleware;
-  let customMiddleware2;
-  let app;
+  let app: SwaggenServerInstance;
   const middleware2 = jest.fn();
-
   interface ExternalDependency {
     doStuff: () => string;
   }
   interface DoThingsService {
-    doThings: () => any;
+    doThings: (error?: ApiErrorInterface) => any;
   }
 
   interface TestContainer extends DefaultContainer {
@@ -35,13 +39,26 @@ describe('test handling middleware functions', () => {
 
   const doThingsServiceFactory = ({
     externalDependency,
+    createError,
   }: TestContainer): DoThingsService => ({
-    doThings: () => {
+    doThings: errorToThrow => {
+      if (errorToThrow) {
+        throw createError(errorToThrow);
+      }
       return externalDependency.doStuff() + 'I have added another output here';
     },
   });
 
-  const coreConfig = {
+  const externalDependencyLibrary: ExternalDependency = {
+    doStuff: () => {
+      return 'some stuff';
+    },
+  };
+
+  let customMiddleware: MiddlewareFactory<TestContainer>;
+  let customMiddleware2: MiddlewareFactory<TestContainer>;
+
+  const coreConfig: SwaggenOptions<TestContainer> = {
     swagger: {
       paths: {
         '/count/{lol}/test': {
@@ -51,8 +68,14 @@ describe('test handling middleware functions', () => {
         },
       },
     },
-    customServices: {},
-    healthConfig: { services: [], name: 'test-app-name' },
+    customServices: {
+      doThingsService: asFunction<DoThingsService>(
+        doThingsServiceFactory,
+      ).singleton(),
+      externalDependency: asValue<ExternalDependency>(
+        externalDependencyLibrary,
+      ),
+    },
     config: {
       appName: 'test-app-name',
       port: 3000,
@@ -61,7 +84,7 @@ describe('test handling middleware functions', () => {
         customPrefix: 'metric_prefix',
       },
       logger: {
-        environment: 'TEST',
+        enabled: true,
       },
     },
     customMiddlewares: {},
@@ -69,7 +92,7 @@ describe('test handling middleware functions', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    customMiddleware = () => () => {};
+    customMiddleware = () => () => ({});
   });
   afterEach(async () => {
     await new Promise(resolve => {
@@ -82,7 +105,7 @@ describe('test handling middleware functions', () => {
       }
     });
   });
-  it('should return a 200 OK with an empty response if middleware completed without any issue', async () => {
+  it('should return a 200 OK with an data from last middleware on success', async () => {
     customMiddleware = () => () => {
       return {};
     };
@@ -119,7 +142,7 @@ describe('test handling middleware functions', () => {
     expect(status).toEqual(HTTP_STATUS.OK);
     expect(body).toEqual(data);
   });
-  it('should return a 500 ERROR if no status code was provided by last middleware', async () => {
+  it('should return a 500 ERROR if no status code was provided by any middleware', async () => {
     const data = {
       some: 'facts',
     };
@@ -143,5 +166,38 @@ describe('test handling middleware functions', () => {
       name: coreErrors.middleware.noStatusCode,
       code: 500,
     });
+  });
+  it.only('should return a 400 ERROR and not execute second middleware if first has thrown a 400 error', async () => {
+    const data = {
+      some: 'facts',
+    };
+    const errorCode = 'test error name';
+    const expectedError: ApiErrorExternal = {
+      code: HTTP_STATUS.BAD_REQUEST,
+      name: errorCode,
+      errorId: expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      ),
+      trace: expect.arrayContaining([errorCode]),
+    };
+    const customMiddleware2Mock = jest.fn();
+    customMiddleware =
+      ({ STATUS: { BAD_REQUEST }, createError }) =>
+      () => {
+        throw createError({
+          statusCode: BAD_REQUEST,
+          message: 'opps',
+          errorCode,
+        });
+      };
+    customMiddleware2 = () => customMiddleware2Mock;
+    coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
+
+    app = swaggen(coreConfig);
+
+    const { body, status } = await request(app).get('/api/count/lol/test');
+    console.log(body);
+    expect(status).toEqual(400);
+    expect(body).toMatchObject(expectedError);
   });
 });
