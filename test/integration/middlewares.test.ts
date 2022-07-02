@@ -24,7 +24,6 @@ const request = require('supertest');
 
 describe('test handling middleware functions', () => {
   let app: SwaggenServerInstance;
-  const middleware2 = jest.fn();
   interface ExternalDependency {
     doStuff: () => string;
   }
@@ -58,40 +57,41 @@ describe('test handling middleware functions', () => {
   let customMiddleware: MiddlewareFactory<TestContainer>;
   let customMiddleware2: MiddlewareFactory<TestContainer>;
 
-  const coreConfig: SwaggenOptions<TestContainer> = {
-    swagger: {
-      paths: {
-        '/count/{lol}/test': {
-          get: {
-            'x-middlewares': ['customMiddleware', 'customMiddleware2'],
-          },
-        },
-      },
-    },
-    customServices: {
-      doThingsService: asFunction<DoThingsService>(
-        doThingsServiceFactory,
-      ).singleton(),
-      externalDependency: asValue<ExternalDependency>(
-        externalDependencyLibrary,
-      ),
-    },
-    config: {
-      appName: 'test-app-name',
-      port: 3000,
-      metrics: {
-        usePrometheus: false,
-        customPrefix: 'metric_prefix',
-      },
-      logger: {
-        enabled: true,
-      },
-    },
-    customMiddlewares: {},
-  };
+  let coreConfig: SwaggenOptions<TestContainer>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    coreConfig = {
+      swagger: {
+        paths: {
+          '/count/{lol}/test': {
+            get: {
+              'x-middlewares': ['customMiddleware', 'customMiddleware2'],
+            },
+          },
+        },
+      },
+      customServices: {
+        doThingsService: asFunction<DoThingsService>(
+          doThingsServiceFactory,
+        ).singleton(),
+        externalDependency: asValue<ExternalDependency>(
+          externalDependencyLibrary,
+        ),
+      },
+      config: {
+        appName: 'test-app-name',
+        port: 3000,
+        metrics: {
+          usePrometheus: false,
+          customPrefix: 'metric_prefix',
+        },
+        logger: {
+          enabled: true,
+        },
+      },
+      customMiddlewares: {},
+    };
     customMiddleware = () => () => ({});
   });
   afterEach(async () => {
@@ -105,42 +105,90 @@ describe('test handling middleware functions', () => {
       }
     });
   });
-  it('should return a 200 OK with an data from last middleware on success', async () => {
-    customMiddleware = () => () => {
-      return {};
-    };
-    customMiddleware2 =
-      ({ STATUS: { OK } }) =>
-      req => {
-        return { code: OK };
+  describe('test data flow and propagation between middlewares', () => {
+    it('should return a 200 OK with an empty response if middleware completed without any issue', async () => {
+      customMiddleware = () => () => {
+        return {};
       };
-    coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
+      customMiddleware2 =
+        ({ STATUS: { OK } }) =>
+        req => {
+          return { code: OK };
+        };
+      coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
 
-    app = swaggen(coreConfig);
+      app = swaggen(coreConfig);
 
-    const { body, status } = await request(app).get('/api/count/lol/test');
-    expect(status).toEqual(HTTP_STATUS.OK);
-    expect(body).toEqual('');
-  });
-  it('should return a 200 OK with an empty response if middleware completed without any issue', async () => {
-    const data = {
-      some: 'facts',
-    };
-    customMiddleware = () => () => {
-      return {};
-    };
-    customMiddleware2 =
-      ({ STATUS: { OK } }) =>
-      req => {
-        return { code: OK, data };
+      const { body, status } = await request(app).get('/api/count/lol/test');
+      expect(status).toEqual(HTTP_STATUS.OK);
+      expect(body).toEqual('');
+    });
+    it('should return a 200 OK with an last returned data from last middleware', async () => {
+      const data = {
+        some: 'facts',
       };
-    coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
+      const data2 = {
+        another: {
+          thing: 'this',
+        },
+      };
+      customMiddleware = () => () => {
+        return {
+          data,
+        };
+      };
+      customMiddleware2 = () => () => {
+        return { data: data2 };
+      };
+      const customMiddleware3: MiddlewareFactory<TestContainer, any> =
+        ({ STATUS: { OK } }) =>
+        req => {
+          return { data: { ...req.locals }, code: OK };
+        };
+      coreConfig.swagger.paths['/count/{lol}/test'].get['x-middlewares'] = [
+        'customMiddleware',
+        'customMiddleware2',
+        'customMiddleware3',
+      ];
+      coreConfig.customMiddlewares = {
+        customMiddleware,
+        customMiddleware2,
+        customMiddleware3,
+      };
 
-    app = swaggen(coreConfig);
+      app = swaggen(coreConfig);
 
-    const { body, status } = await request(app).get('/api/count/lol/test');
-    expect(status).toEqual(HTTP_STATUS.OK);
-    expect(body).toEqual(data);
+      const { body, status } = await request(app).get('/api/count/lol/test');
+      expect(status).toEqual(HTTP_STATUS.OK);
+      expect(body).toEqual({
+        ...data,
+        ...data2,
+        localLogger: expect.objectContaining({}),
+      });
+    });
+    it('should pass data returned from middlewares to next middleware in the locals dict', async () => {
+      const data = {
+        some: 'facts',
+      };
+      customMiddleware = () => () => {
+        return {};
+      };
+      customMiddleware2 =
+        ({ STATUS: { OK } }) =>
+        req => {
+          return { code: OK, data };
+        };
+      coreConfig.customMiddlewares = {
+        customMiddleware,
+        customMiddleware2,
+      };
+
+      app = swaggen(coreConfig);
+
+      const { body, status } = await request(app).get('/api/count/lol/test');
+      expect(status).toEqual(HTTP_STATUS.OK);
+      expect(body).toEqual(data);
+    });
   });
   it('should return a 500 ERROR if no status code was provided by any middleware', async () => {
     const data = {
