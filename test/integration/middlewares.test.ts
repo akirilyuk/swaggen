@@ -167,7 +167,7 @@ describe('test handling middleware functions', () => {
       code: 500,
     });
   });
-  it.only('should return a 400 ERROR and not execute second middleware if first has thrown a 400 error', async () => {
+  it('should return a 400 ERROR and not execute second middleware if first has thrown a 400 error', async () => {
     const data = {
       some: 'facts',
     };
