@@ -5,6 +5,7 @@ import {
   ApiError,
   ApiErrorExternal,
   ApiErrorInterface,
+  MiddlewareResult,
   SwaggenOptions,
   SwaggenServerInstance,
 } from 'src/interfaces';
@@ -17,6 +18,7 @@ import swaggen, {
   SwaggenConfig,
   asValue,
 } from '../../src';
+import errors from '../../src/constants/errors';
 import coreErrors from '../../src/constants/errors';
 
 const nock = require('nock');
@@ -190,62 +192,69 @@ describe('test handling middleware functions', () => {
       expect(body).toEqual(data);
     });
   });
-  it('should return a 500 ERROR if no status code was provided by any middleware', async () => {
-    const data = {
-      some: 'facts',
-    };
-    customMiddleware = () => () => {
-      return {
-        data,
+  describe('test error handling', () => {
+    it('should return a 500 ERROR if no status code was provided by any middleware', async () => {
+      const expectedError: ApiErrorExternal = {
+        code: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        name: errors.middleware.noStatusCode,
+        errorId: expect.stringMatching(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+        ),
+        trace: expect.arrayContaining([errors.middleware.noStatusCode]),
       };
-    };
-    customMiddleware2 =
-      ({ STATUS: { OK } }) =>
-      req => {
-        return {};
-      };
-    coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
+      customMiddleware =
+        ({}) =>
+        () => {
+          return {
+            data: {},
+          };
+        };
+      customMiddleware2 =
+        ({ STATUS: { OK } }) =>
+        req => {
+          return {};
+        };
+      coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
 
-    app = swaggen(coreConfig);
+      app = swaggen(coreConfig);
 
-    const { body, status } = await request(app).get('/api/count/lol/test');
-    expect(status).toEqual(500);
-    expect(body).toMatchObject({
-      name: coreErrors.middleware.noStatusCode,
-      code: 500,
+      const { body, status } = await request(app).get('/api/count/lol/test');
+      expect(status).toEqual(500);
+      expect(body).toMatchObject(expectedError);
     });
-  });
-  it('should return a 400 ERROR and not execute second middleware if first has thrown a 400 error', async () => {
-    const data = {
-      some: 'facts',
-    };
-    const errorCode = 'test error name';
-    const expectedError: ApiErrorExternal = {
-      code: HTTP_STATUS.BAD_REQUEST,
-      name: errorCode,
-      errorId: expect.stringMatching(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      ),
-      trace: expect.arrayContaining([errorCode]),
-    };
-    const customMiddleware2Mock = jest.fn();
-    customMiddleware =
-      ({ STATUS: { BAD_REQUEST }, createError }) =>
-      () => {
-        throw createError({
-          statusCode: BAD_REQUEST,
-          message: 'opps',
-          errorCode,
-        });
+
+    it('should return a 400 ERROR and not execute second middleware if first has thrown a 400 error', async () => {
+      const errorCode = 'test error name';
+      const expectedError: ApiErrorExternal = {
+        code: HTTP_STATUS.BAD_REQUEST,
+        name: errorCode,
+        errorId: expect.stringMatching(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+        ),
+        trace: expect.arrayContaining([errorCode]),
       };
-    customMiddleware2 = () => customMiddleware2Mock;
-    coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
+      const customMiddleware2Mock: jest.Mock<MiddlewareResult<undefined>> =
+        jest.fn();
+      customMiddleware =
+        ({ STATUS: { BAD_REQUEST }, createError }) =>
+        () => {
+          throw createError({
+            statusCode: BAD_REQUEST,
+            message: 'opps',
+            errorCode,
+          });
+        };
+      customMiddleware2 = () => () => customMiddleware2Mock();
+      coreConfig.customMiddlewares = { customMiddleware, customMiddleware2 };
 
-    app = swaggen(coreConfig);
+      app = swaggen(coreConfig);
 
-    const { body, status } = await request(app).get('/api/count/lol/test');
-    console.log(body);
-    expect(status).toEqual(400);
-    expect(body).toMatchObject(expectedError);
+      const { body, status } = await request(app).get('/api/count/lol/test');
+      console.log(body);
+      expect(status).toEqual(400);
+      expect(body).toMatchObject(expectedError);
+
+      expect(customMiddleware2Mock).not.toHaveBeenCalled();
+    });
   });
 });

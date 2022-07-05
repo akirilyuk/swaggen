@@ -31,6 +31,10 @@ export default <C>(container: C & DefaultContainer) =>
 
     for (let i = 0; i < middlewares.length; i++) {
       try {
+        container.logger.debug(
+          { path: req.route.path },
+          `executing middleware ${i}`,
+        );
         const { code, data } = (await middlewares[i](req)) || {};
         if (code) {
           finalCode = code;
@@ -53,6 +57,7 @@ export default <C>(container: C & DefaultContainer) =>
             'middleware execution failed with unexpected error',
           );
         }
+        break;
       }
       if (i === middlewares.length - 1) {
         allFinished = true;
