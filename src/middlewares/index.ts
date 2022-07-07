@@ -1,5 +1,5 @@
-import log from './log';
-import ping from './ping';
+import log from './log.middleware';
+import ping from './ping.middleware';
 
 export default {
   log,
