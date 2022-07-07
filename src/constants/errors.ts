@@ -7,4 +7,10 @@ export default {
       malformedRequestId: 'swaggen.error.middleware.malformed-request-id',
     },
   },
+  service: {
+    health: {
+      timeout: 'swaggen.error.service.health.timeout',
+      failure: 'swaggen.error.service.health.failure',
+    },
+  },
 };

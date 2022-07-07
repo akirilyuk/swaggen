@@ -45,6 +45,8 @@ export interface Swaggen<C> {
   (options: SwaggenOptions<C>): {};
 }
 
+export type SwaggenErrors = typeof swaggenErrors;
+
 export interface DefaultMiddlewares {
   log: MiddlewareFunction<{ localLogger: Logger }>;
   ping: MiddlewareFunction<void>;
@@ -59,7 +61,7 @@ export interface DefaultContainer extends DefaultMiddlewares {
   extractor: any;
   executor: any;
   app: any;
-  coreErrors: typeof swaggenErrors;
+  coreErrors: SwaggenErrors;
   coreAppConfig: SwaggenConfig;
   [key: string]: any;
 }
