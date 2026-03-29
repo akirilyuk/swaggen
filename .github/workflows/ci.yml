@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  frontend-build:
+    name: Frontend TypeScript build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend-app/package-lock.json
+
+      - name: Restore frontend node_modules cache
+        id: frontend-node-modules
+        uses: actions/cache@v4
+        with:
+          path: frontend-app/node_modules
+          key: ${{ runner.os }}-frontend-app-node-modules-${{ hashFiles('frontend-app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-app-node-modules-
+
+      - name: Install frontend dependencies (only when cache miss)
+        if: steps.frontend-node-modules.outputs.cache-hit != 'true'
+        working-directory: frontend-app
+        run: |
+          # Try reproducible install with npm ci when a lockfile exists; if it fails (lockfile out-of-sync), fall back to npm install
+          if [ -f package-lock.json ]; then
+            if npm ci; then
+              echo "npm ci succeeded"
+            else
+              echo "npm ci failed — falling back to npm install"
+              npm install
+            fi
+          else
+            npm install
+          fi
+      - name: Restore shared node_modules cache
+        id: shared-node-modules
+        uses: actions/cache@v4
+        with:
+          path: shared/node_modules
+          key: ${{ runner.os }}-shared-node-modules-${{ hashFiles('shared/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-shared-node-modules-
+      - name: Install shared dependencies
+        working-directory: shared
+        run: |
+          # Install shared package deps. Prefer npm ci when lockfile exists; fall back to npm install.
+          if [ -f package-lock.json ]; then
+            if npm ci; then
+              echo "shared: npm ci succeeded"
+            else
+              echo "shared: npm ci failed — falling back to npm install"
+              npm install
+            fi
+          else
+            npm install
+          fi
+
+      - name: Run frontend build (TypeScript compile)
+        working-directory: frontend-app
+        run: npm run build

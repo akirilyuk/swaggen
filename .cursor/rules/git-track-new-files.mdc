@@ -1,0 +1,19 @@
+---
+description: Stage new files with git add after creating them
+alwaysApply: true
+---
+
+# Track new files in Git
+
+When you **create** one or more new files (e.g. with the editor, Write tool, or shell), **stage them in git** before finishing the task unless the user asked not to or the paths belong in `.gitignore`.
+
+## What to do
+
+1. After creating files, run from the **repository root**:
+   - `git add -- <path> [<path> ...]` for the exact new paths, or
+   - `git add -N -- <path>` (intent-to-add) if you only want them visible as added without full staging — prefer full `git add` for normal feature files.
+2. If you are unsure whether a file should be tracked (generated artifacts, secrets), check `.gitignore` and **do not** `git add` ignored paths.
+
+## Rationale
+
+Untracked new files are easy to miss in commits; staging them immediately keeps `git status` accurate and matches the expectation that new source files are part of the change set.

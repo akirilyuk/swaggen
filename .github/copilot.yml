@@ -1,0 +1,36 @@
+# .qqqcopilot
+rules:
+  - description: "Ensure database calls are added in the services folder under shared."
+    match:
+      path: "shared/services/**"
+    allow: ["database calls"]
+
+  - description: "Ensure database models and interfaces are stored in shared/models."
+    match:
+      path: "shared/models/**"
+    allow: ["database models", "interfaces"]
+
+  - description: "Ensure screens use TypeScript by default."
+    match:
+      path: "frontend-app/app/**"
+    require:
+      extension: ".tsx"
+
+  - description: "Encourage the use of reusable shared components and styles. Also make sure to use Typescript or TSX for the components."
+    match:
+      path: "frontend-app/components/**"
+    allow: ["reusable components"]
+    suggest: "Use shared components instead of recreating them whenever we are creating a new screen."
+
+  - description: "Encourage the use of shared styles in the frontend app"
+    match:
+      path: "frontend-app/constants/theme.ts"
+    allow: ["shared styles"]
+    suggest: "Use shared styles for consistent design."
+  - description: "Ensure the typescript code compiles and has no errors."
+    match:
+      path: "frontend-app/**"
+  - description: "Ensure the typescript code compiles and has no errors."
+    match:
+      path: "website/**"
+  - description: "Alway post one file in a single code view"

@@ -1,0 +1,49 @@
+{
+  "name": "swaggen-next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "generate:template-previews": "tsx scripts/generate-template-previews.ts",
+    "download:template-covers": "tsx scripts/download-template-cover-images.ts",
+    "db:link": "supabase link",
+    "db:push": "supabase db push",
+    "db:pull": "supabase db pull"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@monaco-editor/react": "^4.7.0",
+    "@supabase/ssr": "^0.9.0",
+    "@supabase/supabase-js": "^2.100.0",
+    "archiver": "^7.0.1",
+    "dotenv": "^17.3.1",
+    "lucide-react": "^0.577.0",
+    "next": "16.1.7",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "uuid": "^13.0.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@tailwindcss/postcss": "^4",
+    "@types/archiver": "^7.0.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.7",
+    "sharp": "^0.34.5",
+    "supabase": "^2.84.4",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}
