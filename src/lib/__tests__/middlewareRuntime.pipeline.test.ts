@@ -3,21 +3,29 @@ import {NextRequest, NextResponse} from 'next/server';
 import {runPipeline} from '@/lib/middlewareRuntime';
 import type {MiddlewareConfig} from '@/types/project';
 
+const defaultMiddlewareFields: Pick<
+    MiddlewareConfig,
+    'description' | 'enabled' | 'isPreset' | 'order' | 'scope'
+> = {
+    description: '',
+    enabled: true,
+    isPreset: false,
+    order: 0,
+    scope: 'global',
+};
+
 function testMiddleware(
-    partial: Omit<MiddlewareConfig, 'code'> & { code: string },
+    partial: Partial<Omit<MiddlewareConfig, 'code'>> &
+        Pick<MiddlewareConfig, 'id' | 'name' | 'code'>,
 ): MiddlewareConfig {
-    return {
-        description: '',
-        enabled: true,
-        isPreset: false,
-        order: 0,
-        scope: 'global',
-        ...partial,
-    };
+    return {...defaultMiddlewareFields, ...partial};
 }
 
 describe('runPipeline', () => {
-    function req(url = 'http://localhost/api/demo/widgets', init?: RequestInit) {
+    function req(
+        url = 'http://localhost/api/demo/widgets',
+        init?: ConstructorParameters<typeof NextRequest>[1],
+    ) {
         return new NextRequest(url, init);
     }
 
