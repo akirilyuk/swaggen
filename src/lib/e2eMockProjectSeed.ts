@@ -82,14 +82,14 @@ const relation: EntityRelation = {
 const samplePipeline: Pipeline = {
   id: PIPE_ID,
   name: 'E2E Sample Pipeline',
-  description: 'Mock pipeline for end-to-end tests',
+  description: 'Mock middleware chain for end-to-end tests',
   steps: [
     {
       id: STEP_ID,
-      type: 'transform',
-      name: 'Mock transform',
+      type: 'middleware',
+      name: 'Error handler chain',
       order: 0,
-      config: { e2e: true },
+      config: { middlewareIds: [MW_ID] },
     },
   ],
 };

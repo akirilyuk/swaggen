@@ -35,9 +35,19 @@ test.describe('Authenticated app (mock user + in-memory project seed)', () => {
   test('pipelines page lists seeded pipeline', async ({ page }) => {
     await page.goto('/pipelines');
     await expect(
-      page.getByRole('heading', { name: 'Pipelines & Bots', level: 1 }),
+      page.getByRole('heading', { name: 'Middleware pipelines', level: 1 }),
     ).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText('E2E Sample Pipeline')).toBeVisible();
+  });
+
+  test('bots page exposes create-bot action in the shell', async ({ page }) => {
+    await page.goto('/bots');
+    await expect(page.getByRole('heading', { name: 'Bots', level: 1 })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(
+      page.getByRole('button', { name: 'Add Bot' }).first(),
+    ).toBeVisible();
   });
 
   test('spec editor renders for active project', async ({ page }) => {

@@ -144,7 +144,7 @@ async function gate(req, ctx) {
     expect(String(body.reason)).toMatch(/stopped/i);
   });
 
-  it('marks non-middleware steps as skipped with a note', async () => {
+  it('returns no step output when the pipeline has no middleware chain steps', async () => {
     const pipeline: Pipeline = {
       id: 'pipe-3',
       name: 'Bots only',
@@ -168,9 +168,9 @@ async function gate(req, ctx) {
     const res = await POST(req);
     const body = await jsonBody(res);
     expect(body.ok).toBe(true);
-    const steps = body.steps as Array<{ skipped?: boolean; note?: string }>;
-    expect(steps[0].skipped).toBe(true);
-    expect(steps[0].note).toMatch(/middleware/i);
+    const steps = body.steps as unknown[];
+    expect(steps).toHaveLength(0);
+    expect(String(body.message)).toMatch(/middleware chain/i);
   });
 
   it('filters disabled middleware out of the chain', async () => {

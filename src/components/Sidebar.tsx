@@ -15,6 +15,7 @@ import {
   Workflow,
   Layout,
   Bot,
+  Waypoints,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -29,7 +30,8 @@ const NAV_ITEMS = [
   { href: '/middlewares', label: 'Middlewares', icon: Layers },
   { href: '/services', label: 'Services', icon: Workflow },
   { href: '/api-paths', label: 'API Paths', icon: Globe },
-  { href: '/pipelines', label: 'Pipelines', icon: Bot },
+  { href: '/pipelines', label: 'Pipelines', icon: Waypoints },
+  { href: '/bots', label: 'Bots', icon: Bot },
   { href: '/pages', label: 'Pages', icon: Layout },
   { href: '/editor', label: 'Spec Editor', icon: Code },
   { href: '/storage', label: 'Data Storage', icon: Database },

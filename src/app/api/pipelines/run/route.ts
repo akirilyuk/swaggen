@@ -53,50 +53,51 @@ export async function POST(req: NextRequest) {
       : {}),
   });
 
-  const steps = [...(pipeline.steps ?? [])].sort((a, b) => a.order - b.order);
+  const ordered = [...(pipeline.steps ?? [])].sort((a, b) => a.order - b.order);
+  const steps = ordered.filter(s => s.type === 'middleware');
+
+  if (steps.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      stopped: false,
+      steps: [],
+      message:
+        'No middleware chain steps in this pipeline. Add a step and pick middlewares under Pipelines.',
+    });
+  }
+
   const outputs: Array<Record<string, unknown>> = [];
 
   for (const step of steps) {
-    if (step.type === 'middleware') {
-      const ids = (step.config?.middlewareIds as string[] | undefined) ?? [];
-      const chain = ids
-        .map(id => middlewares.find(mw => mw.id === id))
-        .filter((mw): mw is MiddlewareConfig => !!mw && mw.enabled);
+    const ids = (step.config?.middlewareIds as string[] | undefined) ?? [];
+    const chain = ids
+      .map(id => middlewares.find(mw => mw.id === id))
+      .filter((mw): mw is MiddlewareConfig => !!mw && mw.enabled);
 
-      const result = await runPipeline(mockReq, chain);
-      const shortCircuit = result.response
-        ? await serializeNextResponse(result.response)
-        : null;
-
-      outputs.push({
-        stepId: step.id,
-        stepName: step.name,
-        type: step.type,
-        middlewareCount: chain.length,
-        errors: result.errors,
-        ctx: toJsonSafe(result.ctx),
-        lastReturnValue: toJsonSafe(result.lastReturnValue),
-        shortCircuit,
-      });
-
-      if (shortCircuit) {
-        return NextResponse.json({
-          ok: true,
-          stopped: true,
-          reason: `Pipeline stopped by middleware response at step "${step.name}"`,
-          steps: outputs,
-        });
-      }
-      continue;
-    }
+    const result = await runPipeline(mockReq, chain);
+    const shortCircuit = result.response
+      ? await serializeNextResponse(result.response)
+      : null;
 
     outputs.push({
       stepId: step.id,
       stepName: step.name,
       type: step.type,
-      skipped: true,
-      note: 'Execution currently implemented for middleware steps.',
+      middlewareCount: chain.length,
+      errors: result.errors,
+      ctx: toJsonSafe(result.ctx),
+      lastReturnValue: toJsonSafe(result.lastReturnValue),
+      shortCircuit,
     });
+
+    if (shortCircuit) {
+      return NextResponse.json({
+        ok: true,
+        stopped: true,
+        reason: `Pipeline stopped by middleware response at step "${step.name}"`,
+        steps: outputs,
+      });
+    }
   }
 
   return NextResponse.json({ ok: true, stopped: false, steps: outputs });

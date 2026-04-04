@@ -386,6 +386,25 @@ export interface Pipeline {
   steps: PipelineStep[];
 }
 
+/**
+ * Optional provider connectivity stored in `Bot.config` (JSONB).
+ * Values persist with the project; treat `apiKey` as a secret (never log it).
+ */
+export interface BotProviderCredentials {
+  /** Provider secret (OpenAI, Anthropic, etc.) */
+  apiKey?: string;
+  /** Override API base URL (Ollama, Azure OpenAI, reverse proxies) */
+  baseUrl?: string;
+  /** e.g. OpenAI organization id when required */
+  organizationId?: string;
+  /** Ollama model id for `custom-ollama` (default: llama3.2) */
+  ollamaModel?: string;
+  /** Override OpenAI `model` param (e.g. `gpt-5.4`, `gpt-4o-mini`) when the preset is wrong for your account */
+  openaiModel?: string;
+  /** Override Anthropic `model` param (e.g. `claude-sonnet-4-6`) */
+  anthropicModel?: string;
+}
+
 export interface Bot {
   id: string;
   name: string;
@@ -394,7 +413,10 @@ export interface Bot {
   type: string;
   /** Custom prompt or instructions */
   instructions?: string;
-  /** Configuration for the bot (JSON) */
+  /**
+   * Arbitrary JSON; commonly includes {@link BotProviderCredentials} keys
+   * (`apiKey`, `baseUrl`, `organizationId`) for runtime API access.
+   */
   config: Record<string, unknown>;
 }
 
