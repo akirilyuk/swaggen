@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import { fetchAccountIdForUser } from '@/lib/accountLookup';
+import { e2eMemoryStorage } from '@/lib/e2eMemoryStorage';
+import { isE2eMockAuthClient } from '@/lib/e2eMockAuth';
 import { supabaseStorage } from '@/lib/supabaseStorage';
 import { supabaseDb } from '@/lib/supabaseDb';
 import { useAuthStore } from '@/store/authStore';
@@ -1593,7 +1595,9 @@ export const useProjectStore = create<ProjectStore>()(
       name: 'swaggen-next-store',
 
       version: 8,
-      storage: createJSONStorage(() => supabaseStorage),
+      storage: createJSONStorage(() =>
+        isE2eMockAuthClient() ? e2eMemoryStorage : supabaseStorage,
+      ),
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
         if (version < 8) {

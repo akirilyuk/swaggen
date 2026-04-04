@@ -7,6 +7,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
+import { isE2eMockAuthServer } from '@/lib/e2eMockAuth';
+
 /** Routes that do NOT require authentication. */
 const PUBLIC_ROUTES = new Set(['/', '/login', '/auth/callback']);
 
@@ -20,6 +22,11 @@ function isPublicRoute(pathname: string): boolean {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  /** Playwright: skip real Supabase session checks (see `PLAYWRIGHT_USE_MOCK_AUTH`). */
+  if (isE2eMockAuthServer()) {
+    return NextResponse.next();
+  }
 
   // Let public routes through without session check
   if (isPublicRoute(pathname)) {

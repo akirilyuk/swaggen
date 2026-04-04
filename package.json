@@ -10,6 +10,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:integration": "jest -c jest.integration.config.cjs",
+    "test:e2e": "playwright test e2e/public",
+    "test:e2e:auth": "PLAYWRIGHT_USE_MOCK_AUTH=1 playwright test e2e/authenticated",
+    "test:e2e:all": "npm run test:e2e && npm run test:e2e:auth",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install chromium",
     "generate:template-previews": "tsx scripts/generate-template-previews.ts",
     "download:template-covers": "tsx scripts/download-template-cover-images.ts",
     "db:link": "supabase link",
@@ -34,6 +40,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",

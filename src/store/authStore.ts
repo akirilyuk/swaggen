@@ -6,6 +6,11 @@
 import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import { create } from 'zustand';
 
+import {
+  E2E_MOCK_SESSION,
+  E2E_MOCK_USER,
+  isE2eMockAuthClient,
+} from '@/lib/e2eMockAuth';
 import { createBrowserClient } from '@/lib/supabaseBrowser';
 
 /* ------------------------------------------------------------------ */
@@ -41,6 +46,16 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   initAuth: async () => {
     if (get().initialized) return;
+
+    if (isE2eMockAuthClient()) {
+      set({
+        user: E2E_MOCK_USER,
+        session: E2E_MOCK_SESSION,
+        loading: false,
+        initialized: true,
+      });
+      return;
+    }
 
     try {
       const supabase = createBrowserClient();
@@ -167,6 +182,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   signOut: async () => {
     console.log('[authStore] Signing out user');
+    if (isE2eMockAuthClient()) {
+      set({ user: null, session: null, loading: false });
+      return;
+    }
     const supabase = createBrowserClient();
     await supabase.auth.signOut();
     console.log('[authStore] User signed out successfully');
