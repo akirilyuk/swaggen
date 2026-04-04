@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { runPipeline } from '@/lib/middlewareRuntime';
 import { getProject, type RegisteredProject } from '@/lib/projectRegistry';
+import { cloneNextRequestWithSwaggenProject } from '@/lib/swaggenRequestMeta';
 import type {
   ApiPath,
   ApiPathOperation,
@@ -268,12 +269,16 @@ async function handleRequest(
   }
 
   const middlewares = resolveMiddlewares(project, matchedOp);
+  const pipelineReq = cloneNextRequestWithSwaggenProject(
+    req,
+    project.id ?? project.slug,
+  );
   const {
     response: mwResponse,
     ctx,
     lastReturnValue,
     errors,
-  } = await runPipeline(req, middlewares);
+  } = await runPipeline(pipelineReq, middlewares);
 
   if (mwResponse) {
     return mwResponse;

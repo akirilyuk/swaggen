@@ -14,6 +14,8 @@ import type {
 
 interface RegistryPayload {
   name: string;
+  /** Project id from the designer store (optional for older clients) */
+  id?: string;
   apiPaths: ApiPath[];
   middlewares: MiddlewareConfig[];
   services: ServiceConfig[];
@@ -37,6 +39,9 @@ export async function POST(req: NextRequest) {
     registerProject({
       slug,
       name: body.name,
+      ...(typeof body.id === 'string' && body.id.trim()
+        ? { id: body.id.trim() }
+        : {}),
       apiPaths: body.apiPaths ?? [],
       middlewares: body.middlewares ?? [],
       services: body.services ?? [],

@@ -6,6 +6,27 @@ import {
   readBotOrganizationId,
   botTypeExpectsApiKey,
 } from '@/lib/botProviderSettings';
+import {
+  SWAGGEN_PROJECT_ID_HEADER,
+  SWAGGEN_USER_ID_HEADER,
+} from '@/lib/swaggenRequestMeta';
+
+/** Optional Swaggen context forwarded to provider HTTP calls where supported. */
+export type BotChatRunMeta = {
+  projectId?: string | null;
+  userId?: string | null;
+};
+
+function upstreamMetaHeaders(meta?: BotChatRunMeta): Record<string, string> {
+  const h: Record<string, string> = {};
+  if (meta?.projectId && String(meta.projectId).trim()) {
+    h[SWAGGEN_PROJECT_ID_HEADER] = String(meta.projectId).trim();
+  }
+  if (meta?.userId && String(meta.userId).trim()) {
+    h[SWAGGEN_USER_ID_HEADER] = String(meta.userId).trim();
+  }
+  return h;
+}
 
 export type BotChatSuccess = {
   ok: true;
@@ -71,7 +92,11 @@ async function readJsonSafe(res: Response): Promise<unknown> {
 }
 
 /** Calls the configured provider for a single user turn (non-streaming). */
-export async function runBotChat(bot: Bot, userMessage: string): Promise<BotChatResult> {
+export async function runBotChat(
+  bot: Bot,
+  userMessage: string,
+  runMeta?: BotChatRunMeta,
+): Promise<BotChatResult> {
   const trimmed = userMessage.trim();
   if (!trimmed) {
     return { ok: false, error: 'Message is empty.' };
@@ -99,6 +124,7 @@ export async function runBotChat(bot: Bot, userMessage: string): Promise<BotChat
       organizationId,
       instructions,
       userMessage: trimmed,
+      runMeta,
     });
   }
 
@@ -112,6 +138,7 @@ export async function runBotChat(bot: Bot, userMessage: string): Promise<BotChat
       apiKey,
       instructions,
       userMessage: trimmed,
+      runMeta,
     });
   }
 
@@ -128,6 +155,7 @@ export async function runBotChat(bot: Bot, userMessage: string): Promise<BotChat
       model,
       instructions,
       userMessage: trimmed,
+      runMeta,
     });
   }
 
@@ -144,6 +172,7 @@ async function callOpenAI(args: {
   organizationId?: string;
   instructions?: string;
   userMessage: string;
+  runMeta?: BotChatRunMeta;
 }): Promise<BotChatResult> {
   const url = `${args.baseUrl.replace(/\/$/, '')}/chat/completions`;
   const messages: Array<{ role: string; content: string }> = [];
@@ -162,10 +191,14 @@ async function callOpenAI(args: {
         ...(args.organizationId
           ? { 'OpenAI-Organization': args.organizationId }
           : {}),
+        ...upstreamMetaHeaders(args.runMeta),
       },
       body: JSON.stringify({
         model: args.model,
         messages,
+        ...(args.runMeta?.userId && String(args.runMeta.userId).trim()
+          ? { user: String(args.runMeta.userId).trim() }
+          : {}),
       }),
       signal: AbortSignal.timeout(120_000),
     });
@@ -200,6 +233,7 @@ async function callAnthropic(args: {
   apiKey: string;
   instructions?: string;
   userMessage: string;
+  runMeta?: BotChatRunMeta;
 }): Promise<BotChatResult> {
   let res: Response;
   try {
@@ -209,6 +243,7 @@ async function callAnthropic(args: {
         'Content-Type': 'application/json',
         'x-api-key': args.apiKey,
         'anthropic-version': '2023-06-01',
+        ...upstreamMetaHeaders(args.runMeta),
       },
       body: JSON.stringify({
         model: args.model,
@@ -249,6 +284,7 @@ async function callOllamaOpenAICompatible(args: {
   model: string;
   instructions?: string;
   userMessage: string;
+  runMeta?: BotChatRunMeta;
 }): Promise<BotChatResult> {
   const url = `${args.baseUrl.replace(/\/$/, '')}/chat/completions`;
   const messages: Array<{ role: string; content: string }> = [];
@@ -264,6 +300,7 @@ async function callOllamaOpenAICompatible(args: {
       headers: {
         'Content-Type': 'application/json',
         ...(args.apiKey ? { Authorization: `Bearer ${args.apiKey}` } : {}),
+        ...upstreamMetaHeaders(args.runMeta),
       },
       body: JSON.stringify({
         model: args.model,

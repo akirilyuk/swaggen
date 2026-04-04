@@ -6,9 +6,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import type { MiddlewareConfig } from '@/types/project';
 
+import {
+  readSwaggenHeader,
+  SWAGGEN_PROJECT_ID_HEADER,
+  SWAGGEN_USER_ID_HEADER,
+} from '@/lib/swaggenRequestMeta';
+
 export interface PipelineContext {
   requestId?: string;
   requestStart?: number;
+  /** Swaggen project id (header `x-swaggen-project-id` or set by the host). */
+  projectId?: string;
   userId?: string;
   token?: string;
   validatedBody?: unknown;
@@ -111,6 +119,8 @@ export async function runPipeline(
   const ctx: PipelineContext = {
     requestId: req.headers.get('x-request-id') ?? crypto.randomUUID(),
     requestStart: Date.now(),
+    projectId: readSwaggenHeader(req, SWAGGEN_PROJECT_ID_HEADER),
+    userId: readSwaggenHeader(req, SWAGGEN_USER_ID_HEADER),
     custom: {},
   };
 
@@ -188,6 +198,8 @@ export async function runSingleMiddlewareForPreview(
   const ctx: PipelineContext = {
     requestId: req.headers.get('x-request-id') ?? crypto.randomUUID(),
     requestStart: Date.now(),
+    projectId: readSwaggenHeader(req, SWAGGEN_PROJECT_ID_HEADER),
+    userId: readSwaggenHeader(req, SWAGGEN_USER_ID_HEADER),
     custom: {},
   };
 

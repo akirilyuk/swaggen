@@ -27,6 +27,8 @@ import {
 } from '@/components/ui';
 import { MIDDLEWARE_PRESETS } from '@/lib/middlewarePresets';
 import { useActionLog } from '@/components/designer/ActionLogContext';
+import { buildMiddlewarePreviewApiPath } from '@/lib/swaggenRequestMeta';
+import { useAuthStore } from '@/store/authStore';
 import { useProjectStore } from '@/store/projectStore';
 import {
   ALL_HTTP_METHODS,
@@ -60,7 +62,7 @@ import type { PipelineContext, SwaggenMiddlewareResult } from '../lib/middleware
 /**
  * Custom middleware — implement your business logic here.
  *
- * Read from ctx:   ctx.requestId, ctx.userId, ctx.custom.myValue
+ * Read from ctx:   ctx.requestId, ctx.projectId, ctx.userId, ctx.custom.myValue
  * Write to ctx:    return { ctx: { custom: { myValue: 'hello' } } }
  * Short-circuit:   return { response: NextResponse.json({}, { status: 403 }) }
  */
@@ -79,6 +81,7 @@ export async function handler(
 
 export default function MiddlewaresPage() {
   const project = useProjectStore(s => s.activeProject());
+  const user = useAuthStore(s => s.user);
   const addMiddleware = useProjectStore(s => s.addMiddleware);
   const updateMiddleware = useProjectStore(s => s.updateMiddleware);
   const deleteMiddleware = useProjectStore(s => s.deleteMiddleware);
@@ -192,7 +195,11 @@ export default function MiddlewaresPage() {
         }
         headers = parsed as Record<string, string>;
       }
-      const res = await fetch('/api/middleware-preview', {
+      const previewUrl = buildMiddlewarePreviewApiPath(
+        project.id,
+        user?.id?.trim() || '_',
+      );
+      const res = await fetch(previewUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

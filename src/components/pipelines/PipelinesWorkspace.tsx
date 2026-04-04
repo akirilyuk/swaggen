@@ -15,6 +15,8 @@ import {
   Textarea,
 } from '@/components/ui';
 import { useActionLog } from '@/components/designer/ActionLogContext';
+import { buildPipelineRunApiPath } from '@/lib/swaggenRequestMeta';
+import { useAuthStore } from '@/store/authStore';
 import { useProjectStore } from '@/store/projectStore';
 import type { HttpMethod, Pipeline, PipelineStep } from '@/types/project';
 import { ALL_HTTP_METHODS } from '@/types/project';
@@ -39,6 +41,7 @@ function middlewareStepsOnly(pipeline: Pipeline): Pipeline {
 
 export function PipelinesWorkspace() {
   const project = useProjectStore(s => s.activeProject());
+  const user = useAuthStore(s => s.user);
   const addPipeline = useProjectStore(s => s.addPipeline);
   const updatePipeline = useProjectStore(s => s.updatePipeline);
   const deletePipeline = useProjectStore(s => s.deletePipeline);
@@ -132,7 +135,11 @@ export function PipelinesWorkspace() {
     const path = simPath.startsWith('/') ? simPath : `/${simPath}`;
 
     try {
-      const res = await fetch('/api/pipelines/run', {
+      const runUrl = buildPipelineRunApiPath(
+        project.id,
+        user?.id?.trim() || '_',
+      );
+      const res = await fetch(runUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

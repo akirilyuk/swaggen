@@ -2,7 +2,7 @@
 
 import { Button, Card } from '@/components/ui';
 
-/** Response shape from POST /api/pipelines/run */
+/** Response shape from POST /api/pipelines/{projectId}/{userId}/run */
 export type PipelineRunResponse = {
   ok?: boolean;
   stopped?: boolean;

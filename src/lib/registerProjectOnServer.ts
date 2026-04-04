@@ -7,6 +7,7 @@ export async function registerProjectOnServer(project: Project): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name: project.name,
+      id: project.id,
       apiPaths: project.apiPaths ?? [],
       middlewares: project.middlewares ?? [],
       services: project.services ?? [],

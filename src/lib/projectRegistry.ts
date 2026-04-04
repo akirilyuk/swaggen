@@ -20,6 +20,8 @@ export interface RegisteredProject {
   slug: string;
   /** Human-readable project name */
   name: string;
+  /** Designer project UUID when registered from the client store */
+  id?: string;
   apiPaths: ApiPath[];
   middlewares: MiddlewareConfig[];
   services: ServiceConfig[];

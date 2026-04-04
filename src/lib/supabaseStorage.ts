@@ -9,6 +9,7 @@
  * `supabaseDb` calls in each store action. This adapter only reads
  * the full state on startup and writes the meta row on every state change.
  */
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { StateStorage } from 'zustand/middleware';
 
 import type { Project } from '@/types/project';
@@ -18,33 +19,76 @@ import { fetchAccountIdForUser } from '@/lib/accountLookup';
 import { getSupabaseClient } from './supabase';
 import { supabaseDb } from './supabaseDb';
 
-/** Resolve `accounts.id` for the signed-in user (avoids circular imports). */
-async function getAccountIdForCurrentUser(): Promise<string | null> {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { useAuthStore } = require('@/store/authStore');
-    const user = useAuthStore.getState().user as { id: string } | null;
-    if (!user) return null;
-    return fetchAccountIdForUser(user.id);
-  } catch {
-    return null;
-  }
-}
-
-/** Supabase Auth user id — required for store_state_meta RLS (migration 006). */
-function getAuthUserIdForMeta(): string | null {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { useAuthStore } = require('@/store/authStore');
-    return useAuthStore.getState().user?.id ?? null;
-  } catch {
-    return null;
-  }
+/**
+ * Auth user id from the Supabase session (JWT). Required for RLS on
+ * `store_state_meta` (`user_id = auth.uid()`). Prefer this over the Zustand
+ * auth store so writes work right after refresh before the store rehydrates.
+ */
+async function getSessionUserId(supabase: SupabaseClient): Promise<string | null> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user?.id) return null;
+  return data.user.id;
 }
 
 const META_TABLE = 'store_state_meta';
-// Keep this in sync with `version: 3` in `src/store/projectStore.ts`
-const PERSIST_VERSION = 3;
+/** Keep in sync with `version` in `src/store/projectStore.ts` persist config. */
+const PERSIST_VERSION = 8;
+
+/**
+ * Zustand persist `name` for the project store — must match `projectStore.ts`.
+ * Legacy rows used this string alone as `store_state_meta.key`, which breaks RLS
+ * when multiple users share the same PK; we now scope keys per user.
+ */
+const SWAGGEN_PROJECT_PERSIST_NAME = 'swaggen-next-store';
+
+/** Primary `store_state_meta.key` for this persist name + session. */
+function scopedStoreMetaKey(persistName: string, userId: string | null): string {
+  if (userId) return `${persistName}:user:${userId}`;
+  return `${persistName}:anonymous`;
+}
+
+/**
+ * Copy legacy singleton meta (`key = swaggen-next-store`) to a per-user key, then
+ * delete the legacy row (current user only — RLS).
+ */
+async function migrateUnscopedSwaggenMetaIfNeeded(
+  supabase: SupabaseClient,
+  uid: string,
+  scopedKey: string,
+): Promise<void> {
+  const { data: legacy, error: legErr } = await supabase
+    .from(META_TABLE)
+    .select('active_project_id, project_ids')
+    .eq('key', SWAGGEN_PROJECT_PERSIST_NAME)
+    .maybeSingle();
+  if (legErr || !legacy) return;
+
+  const accountId = await fetchAccountIdForUser(uid);
+  const { error: upErr } = await supabase.from(META_TABLE).upsert(
+    {
+      key: scopedKey,
+      user_id: uid,
+      account_id: accountId,
+      active_project_id: legacy.active_project_id ?? null,
+      project_ids: legacy.project_ids ?? [],
+    },
+    { onConflict: 'key' },
+  );
+  if (upErr) {
+    console.error(
+      '[supabaseStorage] migrate legacy meta upsert:',
+      upErr.message,
+    );
+    return;
+  }
+  const { error: delErr } = await supabase
+    .from(META_TABLE)
+    .delete()
+    .eq('key', SWAGGEN_PROJECT_PERSIST_NAME);
+  if (delErr) {
+    console.warn('[supabaseStorage] migrate legacy meta delete:', delErr.message);
+  }
+}
 
 export const supabaseStorage: StateStorage = {
   /**
@@ -62,15 +106,30 @@ export const supabaseStorage: StateStorage = {
     }
 
     try {
-      const { data: meta, error: metaError } = await supabase
-        .from(META_TABLE)
-        .select('active_project_id, project_ids')
-        .eq('key', key)
-        .maybeSingle();
+      const uid = await getSessionUserId(supabase);
+      let metaRowKey = scopedStoreMetaKey(key, uid);
+
+      const selectMeta = (k: string) =>
+        supabase
+          .from(META_TABLE)
+          .select('active_project_id, project_ids')
+          .eq('key', k)
+          .maybeSingle();
+
+      let { data: meta, error: metaError } = await selectMeta(metaRowKey);
 
       if (metaError) {
         console.error('[supabaseStorage] read meta error:', metaError.message);
         return null;
+      }
+
+      if (
+        !meta &&
+        uid &&
+        key === SWAGGEN_PROJECT_PERSIST_NAME
+      ) {
+        await migrateUnscopedSwaggenMetaIfNeeded(supabase, uid, metaRowKey);
+        ({ data: meta } = await selectMeta(metaRowKey));
       }
 
       const projectIds = (meta?.project_ids ?? []) as unknown as string[];
@@ -78,13 +137,20 @@ export const supabaseStorage: StateStorage = {
       if (projectIds.length === 0) {
         // Try the legacy kv_store blob (one-time migration).
         try {
-          const { data: kvRow } = await supabase
-            .from('kv_store')
-            .select('value')
-            .eq('key', key)
-            .maybeSingle();
+          let legacyKv: unknown = null;
+          for (const kvKey of [...new Set([key, metaRowKey])]) {
+            const { data: kvRow } = await supabase
+              .from('kv_store')
+              .select('value')
+              .eq('key', kvKey)
+              .maybeSingle();
+            if (kvRow?.value != null) {
+              legacyKv = kvRow.value;
+              break;
+            }
+          }
 
-          const legacy = kvRow?.value;
+          const legacy = legacyKv;
           if (legacy != null) {
             const legacyParsed =
               typeof legacy === 'string' ? JSON.parse(legacy) : legacy;
@@ -97,7 +163,7 @@ export const supabaseStorage: StateStorage = {
                 '[supabaseStorage] Migrating legacy kv_store data to normalised tables',
               );
               await migrateFullStateToSupabase(
-                key,
+                metaRowKey,
                 legacyProjects,
                 legacyActiveProjectId,
               );
@@ -114,7 +180,7 @@ export const supabaseStorage: StateStorage = {
         const { data: refreshedMeta } = await supabase
           .from(META_TABLE)
           .select('active_project_id, project_ids')
-          .eq('key', key)
+          .eq('key', metaRowKey)
           .maybeSingle();
 
         const refreshedProjectIds = (refreshedMeta?.project_ids ??
@@ -132,7 +198,7 @@ export const supabaseStorage: StateStorage = {
             projects = recovered;
             activeProjectId = recovered[0]?.id ?? null;
             await syncMetaToSupabase(
-              key,
+              metaRowKey,
               recovered,
               refreshedActiveProjectId ?? activeProjectId,
             );
@@ -187,7 +253,15 @@ export const supabaseStorage: StateStorage = {
       const projects = (state.projects ?? []) as Project[];
       const activeProjectId = state.activeProjectId ?? null;
 
-      await syncMetaToSupabase(key, projects, activeProjectId);
+      const uid = await getSessionUserId(supabase);
+      if (!uid) {
+        console.warn(
+          '[supabaseStorage] skip setItem — no Supabase session (cannot satisfy store_state_meta RLS)',
+        );
+        return;
+      }
+      const metaRowKey = scopedStoreMetaKey(key, uid);
+      await syncMetaToSupabase(metaRowKey, projects, activeProjectId);
     } catch (err) {
       console.error('[supabaseStorage] unexpected error during setItem:', err);
     }
@@ -201,10 +275,13 @@ export const supabaseStorage: StateStorage = {
     if (!supabase) return;
 
     try {
+      const uid = await getSessionUserId(supabase);
+      const metaRowKey = scopedStoreMetaKey(key, uid);
+
       const { data: meta, error: metaError } = await supabase
         .from(META_TABLE)
         .select('project_ids')
-        .eq('key', key)
+        .eq('key', metaRowKey)
         .maybeSingle();
 
       if (!metaError && meta?.project_ids?.length) {
@@ -214,7 +291,17 @@ export const supabaseStorage: StateStorage = {
       const { error: metaDelError } = await supabase
         .from(META_TABLE)
         .delete()
-        .eq('key', key);
+        .eq('key', metaRowKey);
+
+      if (
+        uid &&
+        key === SWAGGEN_PROJECT_PERSIST_NAME
+      ) {
+        await supabase
+          .from(META_TABLE)
+          .delete()
+          .eq('key', SWAGGEN_PROJECT_PERSIST_NAME);
+      }
 
       if (metaDelError) {
         console.error(
@@ -288,19 +375,28 @@ async function syncMetaToSupabase(
     await supabase.from('projects').delete().in('id', removedProjectIds);
   }
 
-  // Upsert the meta row (user_id + account_id for RLS)
-  const accountId = await getAccountIdForCurrentUser();
-  const userId = getAuthUserIdForMeta();
-  await supabase.from(META_TABLE).upsert(
+  const sessionUserId = await getSessionUserId(supabase);
+  if (!sessionUserId) {
+    console.warn(
+      '[supabaseStorage] skip meta sync — no Supabase session (store_state_meta RLS requires user_id = auth.uid())',
+    );
+    return;
+  }
+
+  const accountId = await fetchAccountIdForUser(sessionUserId);
+  const { error: upsertError } = await supabase.from(META_TABLE).upsert(
     {
       key,
-      user_id: userId,
+      user_id: sessionUserId,
       account_id: accountId,
       active_project_id: activeProjectId,
       project_ids: nextProjectIds,
     },
     { onConflict: 'key' },
   );
+  if (upsertError) {
+    console.error('[supabaseStorage] meta upsert error:', upsertError.message);
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -322,6 +418,14 @@ async function migrateFullStateToSupabase(
 ): Promise<void> {
   const supabase = getSupabaseClient();
   if (!supabase) return;
+
+  const sessionUserId = await getSessionUserId(supabase);
+  if (!sessionUserId) {
+    console.warn(
+      '[supabaseStorage] skip kv_store → normalised migration — no Supabase session',
+    );
+    return;
+  }
 
   const { data: prevMeta } = await supabase
     .from(META_TABLE)
@@ -358,11 +462,10 @@ async function migrateFullStateToSupabase(
     await supabase.from('bots').delete().in('project_id', nextProjectIds);
   }
 
-  const migrationAccountId = await getAccountIdForCurrentUser();
-  const migrationUserId = getAuthUserIdForMeta();
+  const migrationAccountId = await fetchAccountIdForUser(sessionUserId);
   const projectRows = projects.map(p => ({
     id: p.id,
-    user_id: p.userId ?? migrationUserId,
+    user_id: p.userId ?? sessionUserId,
     account_id: p.accountId ?? migrationAccountId,
     name: p.name,
     description: p.description ?? '',
@@ -737,17 +840,17 @@ async function migrateFullStateToSupabase(
     }
   }
 
-  // Update store meta
-  const accountId = await getAccountIdForCurrentUser();
-  const userId = getAuthUserIdForMeta();
-  await supabase.from(META_TABLE).upsert(
+  const { error: metaErr } = await supabase.from(META_TABLE).upsert(
     {
       key,
-      user_id: userId,
-      account_id: accountId,
+      user_id: sessionUserId,
+      account_id: migrationAccountId,
       active_project_id: activeProjectId,
       project_ids: nextProjectIds,
     },
     { onConflict: 'key' },
   );
+  if (metaErr) {
+    console.error('[supabaseStorage] migration meta upsert error:', metaErr.message);
+  }
 }

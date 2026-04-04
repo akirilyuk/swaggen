@@ -1,7 +1,7 @@
 'use client';
 
 import { Bot, Plus, Trash2, Edit2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { v4 as uuidV4 } from 'uuid';
 
 import PageShell from '@/components/PageShell';
@@ -59,6 +59,26 @@ export function BotsWorkspace() {
     setBotOrgDraft(readBotOrganizationId(editingBot.config) ?? '');
   }, [editingBot?.id]);
 
+  const editingPreviewBot = useMemo(() => {
+    if (!editingBot) return null;
+    const exists = project?.bots.some(b => b.id === editingBot.id) ?? false;
+    const config = mergeBotProviderIntoConfig(editingBot.config, {
+      apiKeyDraft: botApiKeyDraft,
+      removeApiKey: botRemoveApiKey,
+      isNewBot: !exists,
+      baseUrlDraft: botBaseUrlDraft,
+      organizationIdDraft: botOrgDraft,
+    });
+    return { ...editingBot, config };
+  }, [
+    editingBot,
+    project?.bots,
+    botApiKeyDraft,
+    botRemoveApiKey,
+    botBaseUrlDraft,
+    botOrgDraft,
+  ]);
+
   if (!project) {
     return (
       <PageShell title="Bots">
@@ -111,7 +131,7 @@ export function BotsWorkspace() {
       }
     >
       {project.bots.length > 0 && !editingBot && (
-        <BotTesterPanel bots={project.bots} />
+        <BotTesterPanel bots={project.bots} projectName={project.name} />
       )}
 
       {editingBot && (
@@ -257,6 +277,14 @@ export function BotsWorkspace() {
               placeholder="You are a helpful assistant that summarizes..."
               rows={4}
             />
+            {editingPreviewBot && (
+              <BotTesterPanel
+                embedded
+                bots={project.bots}
+                projectName={project.name}
+                previewBot={editingPreviewBot}
+              />
+            )}
             <div className="flex gap-2">
               <Button onClick={saveBot} disabled={!editingBot.name.trim()}>
                 Save Bot
