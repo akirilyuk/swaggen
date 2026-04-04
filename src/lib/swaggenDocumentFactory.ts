@@ -16,9 +16,9 @@ function isFullWidth(el: SwaggenElement, artboardW: number): boolean {
 }
 
 /**
- * Uses the same JPEG as the template gallery (`/template-previews/{id}.jpg`) as
+ * Merges the template cover (`/template-previews/{id}.jpg` from `generate:template-previews`) into
  * the bottom of the layer stack: replaces a full-width hero image, swaps out a
- * full-bleed background rect, or prepends a full-bleed photo.
+ * full-bleed background rect, or prepends a full-bleed image.
  */
 export function mergeTemplateCoverPhotoIntoElements(
   elements: SwaggenElement[],

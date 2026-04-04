@@ -55,6 +55,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  console.warn(
+    '\n[generate:template-previews] Writes abstract vector raster JPEGs. Gallery stock photos live in `templateCoverImageSources.ts`; refresh them with:\n  pnpm run download:template-covers -- --write\n',
+  );
+
   mkdirSync(outDir, { recursive: true });
 
   for (const t of SWAGGEN_LAYOUT_TEMPLATES) {

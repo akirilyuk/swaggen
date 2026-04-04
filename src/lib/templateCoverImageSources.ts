@@ -7,8 +7,9 @@
  */
 
 export const TEMPLATE_COVER_IMAGE_URLS: Record<string, string> = {
+  /** Rich texture (smooth gradients compress to tiny JPEGs that look “empty” in cards). */
   'ig-purple-brand':
-    'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1600&q=85',
+    'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=1600&q=90',
   'ig-flash-sale':
     'https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=1600&q=85',
   'ig-soft-quote':
@@ -58,7 +59,7 @@ export const TEMPLATE_COVER_IMAGE_URLS: Record<string, string> = {
   'nonprofit-donate':
     'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?auto=format&fit=crop&w=1600&q=85',
   'minimal-type-poster':
-    'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1600&q=85',
+    'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&w=1600&q=90',
   'doc-letterhead':
     'https://images.pexels.com/photos/265087/pexels-photo-265087.jpeg?auto=compress&cs=tinysrgb&w=1600',
   'doc-certificate':

@@ -38,4 +38,10 @@ describe('buildSwaggenDocumentFromTemplateId', () => {
     expect(doc.elements.length).toBeGreaterThanOrEqual(0);
     expect(doc.artboardWidth).toBeGreaterThan(0);
   });
+
+  it('uses the generated JPEG cover path under public/template-previews/', () => {
+    const doc = buildSwaggenDocumentFromTemplateId('ig-purple-brand', 'P');
+    const cover = doc.elements.find(e => e.kind === 'image');
+    expect(cover?.image?.src).toBe('/template-previews/ig-purple-brand.jpg');
+  });
 });

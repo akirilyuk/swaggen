@@ -37,6 +37,7 @@ export function SwaggenTemplateCard({
         <SwaggenTemplateThumbnail
           presetId={template.presetId}
           preview={template.preview}
+          templateName={template.name}
           templateId={template.id}
           coverAlt={`${template.name} preview`}
         />
