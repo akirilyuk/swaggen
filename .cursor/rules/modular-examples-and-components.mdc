@@ -1,0 +1,26 @@
+---
+description: Keep example data and large UI split into small, focused modules
+globs: src/data/**/*.ts,src/components/**/*.tsx
+alwaysApply: false
+---
+
+# Modular examples and components
+
+Avoid **one large file** that mixes many unrelated examples, static datasets, or whole-page UI sections. Prefer **small modules** with a **single clear responsibility** and **barrel re-exports** where it helps imports stay tidy.
+
+## Static examples and showcase data (`src/data/`)
+
+- **Split by unit**: e.g. under `src/data/landingExamples/` one blueprint per file (`saasBilling.ts`, `commerce.ts`, …) plus `types.ts` and `index.ts` — not a single monolithic data file.
+- **Shared types**: put shared shapes in `types.ts` next to the data; avoid duplicating interfaces across files.
+- **Barrel file**: use `index.ts` that composes exports so consumers keep `import { … } from '@/data/landingExamples'`.
+- **Heuristic**: if a data file is **~200+ lines** or holds **more than one independent scenario**, extract scenarios into separate files.
+
+## Components (`src/components/`)
+
+- **Section components**: large marketing or page sections belong in their own file (e.g. `LandingExamplesSection.tsx`), not inlined in a parent that already handles layout, copy, and other sections.
+- **Folder colocation**: when a feature grows (multiple subcomponents + hooks + types), use a folder such as `src/components/LandingExamples/` with a thin `LandingExamplesSection.tsx`, focused pieces (`ExampleTabsColumn.tsx`, …), and `index.ts` exporting the public entry.
+- **Heuristic**: if a `.tsx` file mixes **several unrelated sections** or passes **~250+ lines**, extract subcomponents or move data to `src/data/`.
+
+## When touching existing “god files”
+
+If you edit a file that already violates this, **do not refactor the whole thing** unless the task requires it — but **do not add** more bulk there; add new examples or UI in **new files** and wire them in with minimal changes.

@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { LandingExamplesSection } from '@/components/LandingExamples';
+
 const WORKFLOW_STEPS = [
   {
     step: '1',
@@ -218,6 +220,8 @@ export default function LandingPage() {
           </ol>
         </div>
       </section>
+
+      <LandingExamplesSection />
 
       <section className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-24">
         <h2 className="mb-4 text-center text-3xl font-bold text-white">

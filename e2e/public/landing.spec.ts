@@ -16,6 +16,9 @@ test.describe('Marketing landing (logged out)', () => {
     await expect(
       page.getByRole('heading', { name: 'Everything you need to build APIs fast' }),
     ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Example blueprints' }),
+    ).toBeVisible();
   });
 
   // `/entities` is not in `PUBLIC_ROUTES`; `proxy.ts` redirects before RSC render.
