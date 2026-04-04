@@ -47,6 +47,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   initAuth: async () => {
     if (get().initialized) return;
 
+    // E2E: skip Supabase bootstrap so we do not depend on cookies, network, or
+    // `onAuthStateChange` overwriting the mock user on first tick.
     if (isE2eMockAuthClient()) {
       set({
         user: E2E_MOCK_USER,
@@ -182,6 +184,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   signOut: async () => {
     console.log('[authStore] Signing out user');
+    // E2E: no Supabase session to revoke; avoid a failing `signOut` network call.
     if (isE2eMockAuthClient()) {
       set({ user: null, session: null, loading: false });
       return;

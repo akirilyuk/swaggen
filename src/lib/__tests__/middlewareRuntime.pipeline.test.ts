@@ -1,3 +1,13 @@
+/**
+ * Pipeline integration tests for `middlewareRuntime` (compile + run user code).
+ *
+ * `testMiddleware`: `Partial` input avoids duplicating every `MiddlewareConfig`
+ * field in each case; spreading defaults after would trip TS2783 if the param type
+ * required all keys (they’d always be overwritten by the spread).
+ *
+ * `req` init type: DOM `RequestInit` allows `signal: null`; Next’s `RequestInit`
+ * does not — use the constructor’s second-arg type so tsc accepts test doubles.
+ */
 import {NextRequest, NextResponse} from 'next/server';
 
 import {runPipeline} from '@/lib/middlewareRuntime';

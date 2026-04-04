@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+/**
+ * Requires `npm run test:e2e:auth` (mock auth). Project/entity copy matches
+ * `buildE2eMockProject()` in `src/lib/e2eMockProjectSeed.ts`.
+ */
 test.describe('Authenticated app (mock user + in-memory project seed)', () => {
   test('dashboard loads shell and seeded project', async ({ page }) => {
     await page.goto('/');

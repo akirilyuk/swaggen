@@ -1595,6 +1595,8 @@ export const useProjectStore = create<ProjectStore>()(
       name: 'swaggen-next-store',
 
       version: 8,
+      // E2E mock auth uses RAM-backed persist so tests get a known project graph
+      // without seeding Supabase. Production / normal dev keep cloud persistence.
       storage: createJSONStorage(() =>
         isE2eMockAuthClient() ? e2eMemoryStorage : supabaseStorage,
       ),

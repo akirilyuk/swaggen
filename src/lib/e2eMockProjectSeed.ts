@@ -1,5 +1,10 @@
 /**
  * Deterministic project graph for Playwright when using in-memory persist.
+ *
+ * UUIDs are fixed (not random) so unit/e2e expectations stay stable and the seed
+ * matches what we assert in `e2e/authenticated/app.spec.ts`. `PERSIST_VERSION` in
+ * the JSON must stay aligned with `projectStore`’s `version` or rehydration runs
+ * the wrong migrate path.
  */
 import { MIDDLEWARE_PRESETS } from '@/lib/middlewarePresets';
 import type {
@@ -21,6 +26,7 @@ const OPENAPI_SEED = JSON.stringify(
   2,
 );
 
+/** Referenced by tests that assume a single active seeded project. */
 export const E2E_MOCK_PROJECT_ID = '11111111-1111-1111-1111-111111111111';
 const ENT_AUTHOR = '22222222-2222-2222-2222-222222222222';
 const ENT_POST = '33333333-3333-3333-3333-333333333333';
@@ -121,7 +127,10 @@ export function buildE2eMockProject(): Project {
   };
 }
 
-/** Zustand persist blob for `swaggen-next-store` (version must match projectStore). */
+/**
+ * Zustand persist blob for `swaggen-next-store`.
+ * `version` must match `persist({ version })` in `projectStore.ts`.
+ */
 export function buildE2ePersistedStoreJson(): string {
   const project = buildE2eMockProject();
   return JSON.stringify({

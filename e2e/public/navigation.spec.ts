@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+/**
+ * Unknown app routes still go through auth middleware first, so guests see `/login`
+ * (302 → 200) rather than Next’s 404 — that is intentional product behavior, not a bug.
+ */
 test.describe('Public navigation', () => {
   test('landing header navigates to login', async ({ page }) => {
     await page.goto('/');

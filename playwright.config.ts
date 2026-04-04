@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/**
+ * One dev server cannot be “real auth” and “mock auth” at the same time, so we
+ * split runs: `test:e2e` → public specs only; `test:e2e:auth` sets this flag and
+ * injects `E2E_*` env into `webServer` (see `env` below).
+ */
 const useMockAuth = process.env.PLAYWRIGHT_USE_MOCK_AUTH === '1';
 
 /**
@@ -31,6 +36,8 @@ export default defineConfig({
         timeout: 180_000,
         stdout: 'pipe',
         stderr: 'pipe',
+        // Spread `process.env` so PATH, NODE_OPTIONS, etc. survive; then overlay
+        // mock flags only for the auth suite (see `useMockAuth` above).
         env: {
           ...process.env,
           ...(useMockAuth

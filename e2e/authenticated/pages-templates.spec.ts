@@ -1,6 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 
-/** PageShell + action log can duplicate labels; target the primary toolbar control. */
+/**
+ * `ActionLogPanel` / portals can surface a second “Create Page” control with the
+ * same accessible name, which triggers Playwright strict-mode violations. Scope
+ * to `main` and take the first match so we click the real PageShell action.
+ */
 function primaryCreatePageButton(page: Page) {
   return page.locator('main').getByRole('button', { name: 'Create Page' }).first();
 }

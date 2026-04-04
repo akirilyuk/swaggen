@@ -23,7 +23,10 @@ function isPublicRoute(pathname: string): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  /** Playwright: skip real Supabase session checks (see `PLAYWRIGHT_USE_MOCK_AUTH`). */
+  // E2E mock auth: without this, `getUser()` has no session cookie and every
+  // protected route redirects to `/login`, so authenticated Playwright specs could
+  // never load `/entities`, `/pages`, etc. Client-side mock user alone is not
+  // enough — the Edge layer runs first. Gated by `E2E_MOCK_AUTH` (see playwright.config).
   if (isE2eMockAuthServer()) {
     return NextResponse.next();
   }
