@@ -76,7 +76,7 @@ export function SwaggenTemplatePanel({ onApply }: SwaggenTemplatePanelProps) {
       <button
         type="button"
         onClick={() => setGalleryOpen(o => !o)}
-        className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-left transition hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:hover:bg-zinc-800"
+        className="flex w-full items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-left transition hover:bg-zinc-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/50 dark:border-zinc-700 dark:bg-zinc-800/60 dark:hover:bg-zinc-800"
         aria-expanded={galleryOpen}
         aria-controls="swaggen-template-gallery-panel"
         id="swaggen-template-gallery-toggle"
@@ -115,10 +115,10 @@ export function SwaggenTemplatePanel({ onApply }: SwaggenTemplatePanelProps) {
 
       <button
         type="button"
-        className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+        className={`flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/50 ${
           selectedId === 'blank'
-            ? 'border-violet-500 bg-violet-50/90 text-zinc-800 shadow-md ring-1 ring-violet-500/20 dark:bg-violet-950/30 dark:text-zinc-100'
-            : 'border-dashed border-zinc-300 text-zinc-600 hover:border-violet-400 hover:bg-violet-50/50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:border-violet-500 dark:hover:bg-violet-950/20'
+            ? 'border-zinc-400 bg-zinc-100/90 text-zinc-800 dark:border-zinc-500 dark:bg-zinc-900/70 dark:text-zinc-100'
+            : 'border-dashed border-zinc-300 text-zinc-600 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:bg-zinc-900/40'
         }`}
         onClick={() => {
           setSelectedId('blank');
@@ -148,7 +148,7 @@ export function SwaggenTemplatePanel({ onApply }: SwaggenTemplatePanelProps) {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search templates…"
-          className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-8 pr-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+          className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-8 pr-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:border-zinc-500"
           aria-label="Search templates"
         />
       </div>
@@ -159,7 +159,7 @@ export function SwaggenTemplatePanel({ onApply }: SwaggenTemplatePanelProps) {
           onClick={() => setCategoryId('all')}
           className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-medium transition ${
             categoryId === 'all'
-              ? 'bg-violet-600 text-white shadow-sm'
+              ? 'bg-zinc-800 text-zinc-50 dark:bg-zinc-200 dark:text-zinc-900'
               : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300'
           }`}
         >
@@ -173,7 +173,7 @@ export function SwaggenTemplatePanel({ onApply }: SwaggenTemplatePanelProps) {
             onClick={() => setCategoryId(c.id)}
             className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-medium transition ${
               categoryId === c.id
-                ? 'bg-violet-600 text-white shadow-sm'
+                ? 'bg-zinc-800 text-zinc-50 dark:bg-zinc-200 dark:text-zinc-900'
                 : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300'
             }`}
           >
@@ -185,8 +185,8 @@ export function SwaggenTemplatePanel({ onApply }: SwaggenTemplatePanelProps) {
       <div className="max-h-[min(520px,calc(100vh-16rem))] space-y-4 overflow-y-auto pr-1">
         {showFeatured && (
           <section>
-            <p className="mb-2 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-violet-600 dark:text-violet-400">
-              <Sparkles size={11} /> Popular picks
+            <p className="mb-2 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <Sparkles size={11} className="opacity-80" aria-hidden /> Popular picks
             </p>
             <div className="grid grid-cols-2 gap-2">
               {featured.map(t => (

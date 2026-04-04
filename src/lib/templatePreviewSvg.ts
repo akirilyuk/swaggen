@@ -183,7 +183,7 @@ function textColorForLayout(
   bgIsDark: boolean,
 ): { primary: string; secondary: string } {
   if (layout === 'minimal' && minimalOn === 'dark') {
-    return { primary: 'rgba(255,255,255,0.92)', secondary: 'rgba(255,255,255,0.7)' };
+    return { primary: 'rgba(255,255,255,0.96)', secondary: 'rgba(255,255,255,0.82)' };
   }
   if (
     layout === 'kpiRow' ||
@@ -191,15 +191,15 @@ function textColorForLayout(
     (layout === 'darkPanel' && bgIsDark) ||
     (layout === 'photoTop' && bgIsDark)
   ) {
-    return { primary: 'rgba(255,255,255,0.94)', secondary: 'rgba(255,255,255,0.72)' };
+    return { primary: 'rgba(255,255,255,0.96)', secondary: 'rgba(255,255,255,0.84)' };
   }
   if (layout === 'borderedDoc') {
-    return { primary: 'rgba(120,53,15,0.95)', secondary: 'rgba(146,64,14,0.75)' };
+    return { primary: 'rgba(92,42,12,0.98)', secondary: 'rgba(120,53,15,0.92)' };
   }
   if (bgIsDark) {
-    return { primary: 'rgba(255,255,255,0.93)', secondary: 'rgba(255,255,255,0.68)' };
+    return { primary: 'rgba(255,255,255,0.96)', secondary: 'rgba(255,255,255,0.82)' };
   }
-  return { primary: 'rgba(24,24,27,0.92)', secondary: 'rgba(63,63,70,0.78)' };
+  return { primary: 'rgba(24,24,27,0.96)', secondary: 'rgba(39,39,42,0.92)' };
 }
 
 function hexLuminance(hex: string): number {

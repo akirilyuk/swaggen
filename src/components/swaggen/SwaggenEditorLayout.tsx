@@ -356,7 +356,7 @@ export function SwaggenEditorLayout({
     >
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center gap-2 pr-3 border-r border-zinc-200 dark:border-zinc-700">
-          <Sparkles className="text-violet-500" size={18} />
+          <Sparkles className="text-zinc-500 dark:text-zinc-400" size={18} />
           <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
             Swaggen
           </span>
@@ -635,7 +635,7 @@ export function SwaggenEditorLayout({
                       type="button"
                       className={`flex w-full min-w-0 items-center justify-between rounded-lg border px-2.5 py-2 text-left text-xs transition-colors ${
                         selectedId === el.id
-                          ? 'border-violet-400 bg-violet-100 font-semibold text-violet-950 shadow-sm ring-2 ring-violet-400/40 dark:border-violet-500 dark:bg-violet-950/55 dark:text-violet-50 dark:ring-violet-400/30'
+                          ? 'border-zinc-300 bg-zinc-100 font-semibold text-zinc-900 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100'
                           : 'border-transparent hover:bg-zinc-50 dark:hover:bg-zinc-800'
                       }`}
                       onClick={() => onSelect(el.id)}
@@ -655,25 +655,25 @@ export function SwaggenEditorLayout({
             {selected && (
               <div
                 ref={layerSettingsPanelRef}
-                className="space-y-3 rounded-xl border-2 border-violet-500 bg-gradient-to-b from-violet-50 via-white to-zinc-50/80 p-3 shadow-[0_8px_30px_rgba(124,58,237,0.18)] dark:border-violet-400 dark:from-violet-950/55 dark:via-zinc-900 dark:to-zinc-950 dark:shadow-[0_8px_32px_rgba(139,92,246,0.2)]"
+                className="space-y-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/80"
               >
-                <div className="flex flex-wrap items-center gap-2 border-b border-violet-200/90 pb-2.5 dark:border-violet-700/80">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white shadow-sm dark:bg-violet-500">
+                <div className="flex flex-wrap items-center gap-2 border-b border-zinc-200 pb-2.5 dark:border-zinc-700">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-700 text-white shadow-sm dark:bg-zinc-600">
                     <Pencil size={16} strokeWidth={2.25} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-300">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                       Selected layer
                     </p>
-                    <p className="truncate text-sm font-bold text-violet-950 dark:text-violet-50">
+                    <p className="truncate text-sm font-bold text-zinc-900 dark:text-zinc-100">
                       {selected.name}
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-violet-200/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-violet-900 dark:bg-violet-900/80 dark:text-violet-100">
+                  <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
                     {selected.kind}
                   </span>
                 </div>
-                <p className="text-xs font-bold uppercase tracking-wide text-violet-700/90 dark:text-violet-300/90">
+                <p className="text-xs font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
                   Arrange
                 </p>
                 <div className="flex gap-2">
@@ -728,14 +728,14 @@ export function SwaggenEditorLayout({
 
                 {selected.kind === 'text' && selected.text && (
                   <>
-                    <p className="text-xs font-bold uppercase tracking-wide text-violet-700/90 dark:text-violet-300/90">
+                    <p className="text-xs font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
                       Text
                     </p>
-                    <label className="text-[10px] font-medium text-violet-800/80 dark:text-violet-300/80">
+                    <label className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
                       Content (edit tokens freely)
                     </label>
                     <textarea
-                      className="w-full min-h-[88px] rounded-lg border-2 border-violet-200 bg-white px-2 py-1.5 text-xs text-zinc-900 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-400/40 dark:border-violet-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-violet-400"
+                      className="w-full min-h-[88px] rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-xs text-zinc-900 shadow-sm focus:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400/20 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-500"
                       value={selected.text.content}
                       onChange={e =>
                         updateElement(selected.id, {
@@ -777,7 +777,7 @@ export function SwaggenEditorLayout({
                   </>
                 )}
 
-                <p className="text-xs font-bold uppercase tracking-wide text-violet-700/90 dark:text-violet-300/90">
+                <p className="text-xs font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
                   Page
                 </p>
                 <div className="flex flex-wrap gap-1">
@@ -793,7 +793,7 @@ export function SwaggenEditorLayout({
                   ))}
                 </div>
 
-                <p className="text-xs font-bold uppercase tracking-wide text-violet-700/90 dark:text-violet-300/90">
+                <p className="text-xs font-bold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
                   Selection
                 </p>
                 <label className="text-[10px] text-zinc-500">Opacity</label>
@@ -912,7 +912,7 @@ export function SwaggenEditorLayout({
           aria-orientation="vertical"
           aria-label="Resize left panel"
           title="Drag to resize"
-          className="group relative z-10 w-2 shrink-0 cursor-col-resize touch-none select-none border-l border-r border-transparent bg-zinc-200/70 hover:bg-violet-400/55 active:bg-violet-500/70 dark:bg-zinc-700/90 dark:hover:bg-violet-500/50 dark:active:bg-violet-500/70"
+          className="group relative z-10 w-2 shrink-0 cursor-col-resize touch-none select-none border-l border-r border-transparent bg-zinc-200/70 hover:bg-zinc-300/90 active:bg-zinc-400/80 dark:bg-zinc-700/90 dark:hover:bg-zinc-600 dark:active:bg-zinc-500"
           onPointerDown={onLeftRailPointerDown}
           onPointerMove={onLeftRailPointerMove}
           onPointerUp={finishLeftRailPointer}

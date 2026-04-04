@@ -1,7 +1,5 @@
 'use client';
 
-import { Check } from 'lucide-react';
-
 import type { SwaggenLayoutTemplateDefinition } from '@/lib/swaggenTemplatesRegistry';
 import {
   getPresetDimensionsLabel,
@@ -28,10 +26,11 @@ export function SwaggenTemplateCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`group w-full rounded-xl border text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-900 ${
+      aria-pressed={selected}
+      className={`group w-full rounded-xl border text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-zinc-500/40 dark:focus-visible:ring-offset-zinc-950 ${
         selected
-          ? 'border-violet-500 bg-violet-50/90 shadow-md ring-1 ring-violet-500/20 dark:bg-violet-950/40 dark:ring-violet-400/30'
-          : 'border-zinc-200 bg-white hover:border-violet-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-950 dark:hover:border-violet-600'
+          ? 'border-zinc-400 bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-950'
+          : 'border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700'
       }`}
     >
       <div className="p-2 pb-1">
@@ -46,19 +45,16 @@ export function SwaggenTemplateCard({
         <p className="line-clamp-2 text-[11px] font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
           {template.name}
         </p>
-        <p className="line-clamp-2 text-[10px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+        <p className="line-clamp-2 text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-300">
           {template.description}
         </p>
         <div className="flex flex-wrap items-center gap-1 pt-0.5">
-          <span className="inline-flex max-w-full truncate rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+          <span className="inline-flex max-w-full truncate rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
             {formatName}
           </span>
-          <span className="text-[9px] tabular-nums text-zinc-400">{dims}</span>
+          <span className="text-[9px] tabular-nums text-zinc-500 dark:text-zinc-400">{dims}</span>
           {selected && (
-            <span className="ml-auto inline-flex items-center gap-0.5 text-[9px] font-semibold text-violet-600 dark:text-violet-400">
-              <Check size={10} strokeWidth={3} />
-              Selected
-            </span>
+            <span className="sr-only">This layout is applied to the canvas.</span>
           )}
         </div>
       </div>

@@ -340,7 +340,7 @@ export function SwaggenLayerDataPanel({
                         }}
                         className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-all ${
                           active
-                            ? 'bg-violet-500 border-violet-500 text-white'
+                            ? 'border-zinc-700 bg-zinc-800 text-white dark:border-zinc-500 dark:bg-zinc-200 dark:text-zinc-900'
                             : 'bg-zinc-50 border-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-400'
                         }`}
                       >

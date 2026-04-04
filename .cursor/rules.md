@@ -67,4 +67,4 @@ The following guidelines help keep component files small, which reduces the amou
 
 ## Tools usage
 - when creating temp output files, do it in a temp directory located inside the workspace and make sure to clean up the files after they are no longer needed. This helps to keep the project directory clean and organized, and reduces the chances of accidentally committing temporary files to version control or leaving behind unnecessary files that can clutter the project.
-
+- double-check the output via the mcp chrome extension to ensure that the generated website is correct and meets the requirements of the task. This helps to catch any errors or issues early on and ensures that the code is of high quality before it is committed to the project. The mcp chrome extension can provide valuable insights into the structure and behavior of the generated user interface, allowing you to make any necessary adjustments or improvements before finalizing it.

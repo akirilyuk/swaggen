@@ -47,7 +47,7 @@ export function SwaggenTemplateThumbnail({
 
   const frameClass = gallery
     ? `relative w-full min-h-[200px] overflow-hidden rounded-t-xl bg-zinc-300 shadow-md ring-2 ring-zinc-400/90 dark:bg-zinc-700 dark:ring-zinc-500/90 sm:min-h-[240px] md:min-h-[280px] ${className}`
-    : `relative w-full overflow-hidden rounded-md bg-zinc-200 shadow-inner ring-1 ring-black/10 dark:ring-white/10 ${className}`;
+    : `relative w-full overflow-hidden rounded-md bg-zinc-100 ring-1 ring-zinc-200/70 dark:bg-zinc-800/60 dark:ring-zinc-700/50 ${className}`;
 
   const frameStyle =
     gallery && resolvedSrc

@@ -468,7 +468,7 @@ export const SWAGGEN_LAYOUT_TEMPLATES: SwaggenLayoutTemplateDefinition[] = [
     featured: true,
     preview: {
       background: '#ffffff',
-      layout: 'borderedDoc',
+      layout: 'minimal',
       thumb: { primary: 'Letterhead', secondary: 'Branded A4' },
     },
     build: B.buildA4Letterhead,

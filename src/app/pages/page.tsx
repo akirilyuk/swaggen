@@ -299,7 +299,7 @@ function FrontendPagesPageInner() {
     setIsPreview(true);
   };
 
-  const persistPage = async (closeAfter: boolean) => {
+  const persistPage = async () => {
     if (!editingPage || !editingPage.name.trim()) return;
     const doc = editingPage.swaggenDocument;
     if (!doc) return;
@@ -339,19 +339,12 @@ function FrontendPagesPageInner() {
       updatePage(pageToSave);
       log(
         'success',
-        closeAfter ? 'Page saved' : 'UI changes saved',
-        closeAfter
-          ? pageToSave.name
-          : `${pageToSave.name} · ${widgetComps.length} widgets synced`,
+        'UI changes saved',
+        `${pageToSave.name} · ${widgetComps.length} widgets synced`,
       );
     }
 
-    if (closeAfter) {
-      setEditingPage(null);
-      setIsPreview(false);
-    } else {
-      setEditingPage(pageToSave);
-    }
+    setEditingPage(pageToSave);
 
     const p = useProjectStore.getState().activeProject();
     if (p) await registerProjectOnServer(p);
@@ -785,24 +778,13 @@ function FrontendPagesPageInner() {
               <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800 mx-1 hidden sm:block" />
               <Button
                 type="button"
-                onClick={() => void persistPage(false)}
+                onClick={() => void persistPage()}
                 disabled={!editingPage.name.trim()}
                 className="h-9"
                 title="Write canvas and widgets to the project; keep editing"
               >
                 <Save size={16} className="mr-2" />
                 {isNewPage ? 'Create' : 'Save'}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => void persistPage(true)}
-                disabled={!editingPage.name.trim()}
-                className="h-9"
-                title="Save and return to the page list"
-              >
-                <Save size={16} className="mr-2" />
-                {isNewPage ? 'Create & close' : 'Save & close'}
               </Button>
               <Button
                 type="button"
@@ -897,7 +879,7 @@ function FrontendPagesPageInner() {
                         showComponentTemplates={false}
                         interactiveFieldValues
                         onFieldInsert={insertFieldFromPalette}
-                        onSaveFieldValues={() => void persistPage(false)}
+                        onSaveFieldValues={() => void persistPage()}
                         saveFieldValuesDisabled={!editingPage.name.trim()}
                       />
                     }

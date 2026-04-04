@@ -37,10 +37,10 @@ export function buildIgGradientSale(w: number, h: number) {
   const pad = Math.round(m(w, h) * 0.08);
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, 'linear-gradient(145deg, #f59e0b 0%, #ef4444 55%, #be123c 100%)', 'transparent', 0, 1),
-    tplText(pad, Math.round(h * 0.12), w - pad * 2, 80, 'FLASH SALE', { fontSize: Math.round(m(w, h) * 0.04), fontWeight: 800, color: 'rgba(255,255,255,0.95)', textAlign: 'center', lineHeight: 1 }, 2, 'Eyebrow'),
+    tplText(pad, Math.round(h * 0.12), w - pad * 2, 80, 'FLASH SALE', { fontSize: Math.round(m(w, h) * 0.04), fontWeight: 800, color: '#ffffff', textAlign: 'center', lineHeight: 1 }, 2, 'Eyebrow'),
     tplText(pad, Math.round(h * 0.22), w - pad * 2, Math.round(h * 0.28), '50% OFF', { fontSize: Math.round(m(w, h) * 0.18), fontWeight: 900, color: '#ffffff', textAlign: 'center', lineHeight: 0.95 }, 3, 'Headline'),
-    tplText(pad, Math.round(h * 0.48), w - pad * 2, 60, 'THIS WEEKEND ONLY', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 600, color: 'rgba(255,255,255,0.95)', textAlign: 'center' }, 4, 'Sub'),
-    tplRect(pad, Math.round(h * 0.62), w - pad * 2, Math.round(h * 0.22), 'rgba(0,0,0,0.2)', 'transparent', 20, 5),
+    tplText(pad, Math.round(h * 0.48), w - pad * 2, 60, 'THIS WEEKEND ONLY', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 600, color: '#ffffff', textAlign: 'center' }, 4, 'Sub'),
+    tplRect(pad, Math.round(h * 0.62), w - pad * 2, Math.round(h * 0.22), 'rgba(0,0,0,0.08)', 'transparent', 20, 5),
     tplText(pad, Math.round(h * 0.66), w - pad * 2, 120, 'CODE: SUMMER50', { fontSize: Math.round(m(w, h) * 0.045), fontWeight: 700, color: '#fff', textAlign: 'center' }, 6, 'Code'),
   ];
   return { elements: reindexZ(els), background: '#111827' };
@@ -52,7 +52,7 @@ export function buildIgQuoteSoft(w: number, h: number) {
     tplRect(0, 0, w, h, 'linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%)', 'transparent', 0, 1),
     tplText(pad, Math.round(h * 0.18), w - pad * 2, Math.round(h * 0.35), '"Creativity is intelligence having fun."', { fontSize: Math.round(m(w, h) * 0.055), fontWeight: 600, color: '#831843', textAlign: 'center', lineHeight: 1.15 }, 2, 'Quote'),
     tplLine(pad, Math.round(h * 0.52), w - pad * 2, 4, '#be185d', 3, 3),
-    tplText(pad, Math.round(h * 0.56), w - pad * 2, 48, '— Albert Einstein', { fontSize: Math.round(m(w, h) * 0.028), fontWeight: 500, color: '#9d174d', textAlign: 'center' }, 4, 'Attribution'),
+    tplText(pad, Math.round(h * 0.56), w - pad * 2, 48, '— Albert Einstein', { fontSize: Math.round(m(w, h) * 0.028), fontWeight: 500, color: '#831843', textAlign: 'center' }, 4, 'Attribution'),
   ];
   return { elements: reindexZ(els), background: '#fdf2f8' };
 }
@@ -83,7 +83,7 @@ export function buildIgTipsCarousel(w: number, h: number) {
   const pad = Math.round(m(w, h) * 0.08);
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)', 'transparent', 0, 1),
-    tplText(pad, pad, w - pad * 2, 56, '5 tips for better sleep', { fontSize: Math.round(m(w, h) * 0.038), fontWeight: 700, color: 'rgba(255,255,255,0.9)' }, 2, 'Title'),
+    tplText(pad, pad, w - pad * 2, 56, '5 tips for better sleep', { fontSize: Math.round(m(w, h) * 0.038), fontWeight: 700, color: '#ffffff' }, 2, 'Title'),
     ...[1, 2, 3, 4, 5].map((n, i) => {
       const y = Math.round(h * 0.14) + i * Math.round(h * 0.14);
       return tplText(
@@ -188,7 +188,7 @@ export function buildLinkedInHiring(w: number, h: number) {
       0,
       5,
     ),
-    tplText(pad, Math.round(h * 0.84), w - pad * 2, 48, 'Apply at careers.yourcompany.com', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 600, color: '#0e7490', textAlign: 'center' }, 6, 'Footer'),
+    tplText(pad, Math.round(h * 0.84), w - pad * 2, 48, 'Apply at careers.yourcompany.com', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 600, color: '#155e75', textAlign: 'center' }, 6, 'Footer'),
   ];
   return { elements: reindexZ(els), background: '#f0f9ff' };
 }
@@ -221,7 +221,7 @@ export function buildTwitterNews(w: number, h: number) {
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, '#0f1419', 'transparent', 0, 1),
     tplText(pad, Math.round(h * 0.15), w - pad * 2, 140, 'Breaking: clean energy milestone reached in Q2', { fontSize: Math.round(m(w, h) * 0.048), fontWeight: 800, color: '#f8fafc', lineHeight: 1.15 }, 2, 'Headline'),
-    tplText(pad, Math.round(h * 0.42), w - pad * 2, 80, 'Grid capacity up 18% year over year.', { fontSize: Math.round(m(w, h) * 0.03), fontWeight: 500, color: '#cbd5e1' }, 3, 'Dek'),
+    tplText(pad, Math.round(h * 0.42), w - pad * 2, 80, 'Grid capacity up 18% year over year.', { fontSize: Math.round(m(w, h) * 0.03), fontWeight: 500, color: '#e2e8f0' }, 3, 'Dek'),
     tplLine(pad, Math.round(h * 0.58), w - pad * 2, 4, '#334155', 2, 4),
     tplText(pad, Math.round(h * 0.64), w - pad * 2, 40, 'READ THE REPORT →', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 700, color: '#38bdf8' }, 5, 'CTA'),
   ];
@@ -256,7 +256,7 @@ export function buildYoutubeGaming(w: number, h: number) {
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, 'linear-gradient(135deg, #09090b 0%, #3b0764 50%, #09090b 100%)', 'transparent', 0, 1),
     tplText(pad, Math.round(h * 0.1), w - pad * 2, 100, 'FINAL BOSS', { fontSize: Math.round(m(w, h) * 0.1), fontWeight: 900, color: '#e879f9', textAlign: 'center' }, 2, 'Title'),
-    tplText(pad, Math.round(h * 0.28), w - pad * 2, 56, 'no-hit run · spoiler free', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 600, color: '#a78bfa', textAlign: 'center' }, 3, 'Sub'),
+    tplText(pad, Math.round(h * 0.28), w - pad * 2, 56, 'no-hit run · spoiler free', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 600, color: '#e9d5ff', textAlign: 'center' }, 3, 'Sub'),
     tplRect(pad, Math.round(h * 0.42), w - pad * 2, Math.round(h * 0.48), 'rgba(15,15,20,0.9)', '#c084fc', 12, 4),
     tplText(pad + 20, Math.round(h * 0.48), w - (pad + 20) * 2, 80, 'Gameplay + commentary', { fontSize: Math.round(m(w, h) * 0.04), fontWeight: 800, color: '#fafafa', textAlign: 'center' }, 5, 'Banner'),
   ];
@@ -268,7 +268,7 @@ export function buildSlideTitleHero(w: number, h: number) {
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, 'linear-gradient(120deg, #eff6ff 0%, #ffffff 45%, #eef2ff 100%)', 'transparent', 0, 1),
     tplText(pad, Math.round(h * 0.32), w - pad * 2, 160, 'Quarterly review', { fontSize: Math.round(m(w, h) * 0.08), fontWeight: 800, color: '#1e3a8a', textAlign: 'center', lineHeight: 1.1 }, 2, 'Title'),
-    tplText(pad, Math.round(h * 0.52), w - pad * 2, 56, 'Product · Growth · Operations', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 500, color: '#64748b', textAlign: 'center' }, 3, 'Subtitle'),
+    tplText(pad, Math.round(h * 0.52), w - pad * 2, 56, 'Product · Growth · Operations', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 500, color: '#475569', textAlign: 'center' }, 3, 'Subtitle'),
     tplLine(Math.round(w * 0.35), Math.round(h * 0.62), Math.round(w * 0.3), 4, '#6366f1', 4, 4),
   ];
   return { elements: reindexZ(els), background: '#ffffff' };
@@ -360,7 +360,7 @@ export function buildPosterConcert(w: number, h: number) {
     ),
     tplText(pad, Math.round(h * 0.52), w - pad * 2, 120, 'NEON NIGHTS', { fontSize: Math.round(m(w, h) * 0.09), fontWeight: 900, color: '#f9a8d4', textAlign: 'center' }, 4, 'Title'),
     tplText(pad, Math.round(h * 0.66), w - pad * 2, 56, 'AUG 14 · RIVER STAGE · 8PM', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 700, color: '#f5f5f4', textAlign: 'center' }, 5, 'Meta'),
-    tplText(pad, Math.round(h * 0.76), w - pad * 2, 48, 'Tickets: neonnights.fm', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 500, color: '#d6d3d1', textAlign: 'center' }, 6, 'Tickets'),
+    tplText(pad, Math.round(h * 0.76), w - pad * 2, 48, 'Tickets: neonnights.fm', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 500, color: '#e7e5e4', textAlign: 'center' }, 6, 'Tickets'),
   ];
   return { elements: reindexZ(els), background: '#0c0a09' };
 }
@@ -387,13 +387,45 @@ export function buildRealEstateOpen(w: number, h: number) {
 
 export function buildA4Letterhead(w: number, h: number) {
   const pad = Math.round(m(w, h) * 0.08);
+  const scale = m(w, h);
+  const brandSize = Math.max(22, Math.round(scale * 0.026));
+  const dateSize = Math.max(15, Math.round(scale * 0.017));
+  const bodySize = Math.max(17, Math.round(scale * 0.019));
+  const ruleThickness = Math.max(2, Math.round(scale * 0.002));
+  const brandBarH = Math.max(7, Math.round(scale * 0.005));
+  const brandBarW = Math.min(Math.round(scale * 0.22), 200);
+  const companyY = pad + brandBarH + Math.round(scale * 0.022);
+  const companyH = Math.round(scale * 0.07);
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, '#ffffff', 'transparent', 0, 1),
-    tplRect(pad, pad, 120, 6, '#1e40af', 'transparent', 0, 2),
-    tplText(pad, pad + 24, 400, 48, 'Aurora Partners LLP', { fontSize: 22, fontWeight: 700, color: '#1e3a8a' }, 3, 'Company'),
-    tplText(pad, Math.round(h * 0.22), w - pad * 2, 48, 'March 29, 2026', { fontSize: 16, fontWeight: 500, color: '#64748b' }, 4, 'Date'),
-    tplLine(pad, Math.round(h * 0.3), w - pad * 2, 2, '#e2e8f0', 2, 5),
-    tplText(pad, Math.round(h * 0.34), w - pad * 2, 200, 'Dear client,\n\nThank you for your continued trust. Please find enclosed our summary of next steps…', { fontSize: 17, fontWeight: 400, color: '#334155', lineHeight: 1.55 }, 6, 'Body'),
+    tplRect(pad, pad, brandBarW, brandBarH, '#1d4ed8', 'transparent', 0, 2),
+    tplText(pad, companyY, w - pad * 2, companyH, 'Aurora Partners LLP', {
+      fontSize: brandSize,
+      fontWeight: 700,
+      color: '#0f172a',
+      lineHeight: 1.15,
+    }, 3, 'Company'),
+    tplText(pad, Math.round(h * 0.22), w - pad * 2, Math.round(scale * 0.045), 'March 29, 2026', {
+      fontSize: dateSize,
+      fontWeight: 600,
+      color: '#1e293b',
+    }, 4, 'Date'),
+    tplLine(pad, Math.round(h * 0.3), w - pad * 2, ruleThickness, '#94a3b8', 2, 5),
+    tplText(
+      pad,
+      Math.round(h * 0.34),
+      w - pad * 2,
+      Math.round(h * 0.52),
+      'Dear client,\n\nThank you for your continued trust. Please find enclosed our summary of next steps…',
+      {
+        fontSize: bodySize,
+        fontWeight: 500,
+        color: '#0f172a',
+        lineHeight: 1.65,
+      },
+      6,
+      'Body',
+    ),
   ];
   return { elements: reindexZ(els), background: '#ffffff' };
 }
@@ -420,7 +452,7 @@ export function buildBusinessCardModern(w: number, h: number) {
     tplText(pad, Math.round(h * 0.28), Math.round(w * 0.35) - pad, 100, 'AM', { fontSize: Math.round(m(w, h) * 0.14), fontWeight: 900, color: '#fafafa', textAlign: 'center' }, 3, 'Monogram'),
     tplText(Math.round(w * 0.42), Math.round(h * 0.28), Math.round(w * 0.55), 56, 'Alex Morgan', { fontSize: Math.round(m(w, h) * 0.055), fontWeight: 800, color: '#18181b' }, 4, 'Name'),
     tplText(Math.round(w * 0.42), Math.round(h * 0.42), Math.round(w * 0.55), 40, 'Product Design Lead', { fontSize: Math.round(m(w, h) * 0.032), fontWeight: 500, color: '#52525b' }, 5, 'Title'),
-    tplText(Math.round(w * 0.42), Math.round(h * 0.62), Math.round(w * 0.55), 80, 'hello@studio.com\n+1 (555) 010-2030', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 500, color: '#71717a', lineHeight: 1.4 }, 6, 'Contact'),
+    tplText(Math.round(w * 0.42), Math.round(h * 0.62), Math.round(w * 0.55), 80, 'hello@studio.com\n+1 (555) 010-2030', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 500, color: '#52525b', lineHeight: 1.4 }, 6, 'Contact'),
   ];
   return { elements: reindexZ(els), background: '#fafafa' };
 }
@@ -548,7 +580,7 @@ export function buildPurpleBrandQuote(w: number, h: number) {
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'transparent', 0, 1),
     tplText(pad, Math.round(h * 0.35), w - pad * 2, Math.round(h * 0.2), 'Design that speaks.', { fontSize: Math.round(m(w, h) * 0.06), fontWeight: 700, color: '#ffffff' }, 2, 'Headline'),
-    tplText(pad, Math.round(h * 0.52), w - pad * 2, Math.round(h * 0.15), 'Your brand. Your canvas.', { fontSize: Math.round(m(w, h) * 0.028), fontWeight: 500, color: 'rgba(255,255,255,0.92)' }, 3, 'Sub'),
+    tplText(pad, Math.round(h * 0.52), w - pad * 2, Math.round(h * 0.15), 'Your brand. Your canvas.', { fontSize: Math.round(m(w, h) * 0.028), fontWeight: 500, color: '#f1f5f9' }, 3, 'Sub'),
   ];
   return { elements: reindexZ(els), background: '#4c1d95' };
 }
@@ -559,7 +591,7 @@ export function buildSummerLaunchEvent(w: number, h: number) {
     tplRect(pad, pad, w - pad * 2, h - pad * 2, '#0f172a', '#e2e8f0', 24, 1),
     tplRect(pad + 24, pad + 24, w - (pad + 24) * 2, Math.round(h * 0.42), 'linear-gradient(90deg, #38bdf8, #818cf8)', 'transparent', 16, 2),
     tplText(pad + 48, Math.round(h * 0.52), w - (pad + 48) * 2, 120, 'Summer Launch', { fontSize: Math.round(m(w, h) * 0.055), fontWeight: 800, color: '#f8fafc' }, 3, 'Title'),
-    tplText(pad + 48, Math.round(h * 0.62), w - (pad + 48) * 2, 80, 'Save the date · RSVP', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 500, color: '#94a3b8' }, 4, 'Meta'),
+    tplText(pad + 48, Math.round(h * 0.62), w - (pad + 48) * 2, 80, 'Save the date · RSVP', { fontSize: Math.round(m(w, h) * 0.026), fontWeight: 500, color: '#cbd5e1' }, 4, 'Meta'),
   ];
   return { elements: reindexZ(els), background: '#0f172a' };
 }
@@ -569,7 +601,7 @@ export function buildMinimalTypographic(w: number, h: number) {
   const els: SwaggenElement[] = [
     tplRect(0, 0, w, h, '#fafafa', '#e4e4e7', 0, 1),
     tplText(pad, Math.round(h * 0.38), w - pad * 2, 140, 'LESS IS MORE', { fontSize: Math.round(m(w, h) * 0.072), fontWeight: 900, color: '#18181b', textAlign: 'center' }, 2, 'Title'),
-    tplText(pad, Math.round(h * 0.52), w - pad * 2, 60, 'Studio collection 2026', { fontSize: Math.round(m(w, h) * 0.022), fontWeight: 400, color: '#71717a', textAlign: 'center' }, 3, 'Tag'),
+    tplText(pad, Math.round(h * 0.52), w - pad * 2, 60, 'Studio collection 2026', { fontSize: Math.round(m(w, h) * 0.024), fontWeight: 500, color: '#3f3f46', textAlign: 'center' }, 3, 'Tag'),
   ];
   return { elements: reindexZ(els), background: '#fafafa' };
 }
