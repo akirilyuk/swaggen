@@ -39,7 +39,6 @@ Schema changes live in `supabase/migrations/` (`001` … `007`). You can apply t
 1. Log in so the CLI can talk to Supabase:
 
    ```bash
-   cd swaggen-next
    npx supabase login
    ```
 
