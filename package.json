@@ -36,6 +36,8 @@
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/archiver": "^7.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
@@ -45,6 +47,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.7",
     "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "sharp": "^0.34.5",
     "supabase": "^2.84.4",
     "tailwindcss": "^4",
